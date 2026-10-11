@@ -109,13 +109,29 @@ scene.add(signHit);
 toonify(scene); // map built: convert anything made with raw Lambert materials
 hw.dress(scene, "map", { home: HOME, pads: [...Object.values(SPOTS), GARDEN] });
 
+// Every view is framed for a wide screen. On narrow or tall screens (phones and
+// tablets held upright) widen the lens a little, then pull the camera back so
+// the same width still fits, instead of cropping the sides off.
+const BASE_FOV = 45, MAX_FOV = 60;
+const WANT_HFOV = THREE.MathUtils.degToRad(54); // enough to see all the map's places
+let pullBack = 1;
 const resize = () => {
   const w = window.innerWidth, h = window.innerHeight;
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
   renderer.setSize(w, h, false);
   camera.aspect = w / h;
+  const tanH = Math.tan(WANT_HFOV / 2);
+  const needV = THREE.MathUtils.radToDeg(2 * Math.atan(tanH / camera.aspect));
+  camera.fov = THREE.MathUtils.clamp(needV, BASE_FOV, MAX_FOV);
+  const haveTanH = Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2) * camera.aspect;
+  pullBack = Math.max(1, tanH / haveTanH);
   camera.updateProjectionMatrix();
 };
+/** Camera at the view's spot, pulled back along its line of sight on narrow screens. */
+function placeCamera(v: { camPos: THREE.Vector3; camLook: THREE.Vector3 }, drift = new THREE.Vector3()) {
+  camera.position.copy(v.camPos).sub(v.camLook).multiplyScalar(pullBack).add(v.camLook).add(drift);
+  camera.lookAt(v.camLook);
+}
 addEventListener("resize", resize);
 resize();
 
@@ -142,6 +158,8 @@ type View = Pick<AreaScene, "scene" | "camPos" | "camLook" | "update">;
 const mapView: View = { scene, camPos: camera.position.clone(), camLook: new THREE.Vector3(0, 0, -0.5), update: updateWorld };
 const areaViews = new Map<Area, AreaScene>(); // built on first visit, then reused
 let view: View = mapView;
+addEventListener("resize", () => placeCamera(view)); // after `resize` has worked out pullBack
+placeCamera(view);
 let here: Area | null = null;
 let fading = false;
 
@@ -151,8 +169,7 @@ function show(v: View) {
   pendingAction = null;
   view = v;
   v.scene.add(cat.group); // add() moves the cat out of the old scene
-  camera.position.copy(v.camPos);
-  camera.lookAt(v.camLook);
+  placeCamera(v);
 }
 
 /** Fade to black, swap the scene while it's dark, fade back in. */
@@ -205,10 +222,12 @@ function render() {
   if (me.id !== catId) swapCat();
   $("coins").textContent = String(state.coins);
   const brain = Math.min(state.sinceGame, BRAIN_PER_GAME);
-  $("brain-hud").textContent = brain >= BRAIN_PER_GAME ? "🎮 ready!" : `${brain}/${BRAIN_PER_GAME}`;
+  // Small screens hide .lbl, leaving just 🎮.
+  $("brain-hud").innerHTML = brain >= BRAIN_PER_GAME ? "🎮<span class=\"lbl\"> ready!</span>" : `${brain}/${BRAIN_PER_GAME}`;
   $("brain-stat").classList.toggle("ready", brain >= BRAIN_PER_GAME);
   $("fish").textContent = String(state.fish);
   $("catname").textContent = me.name;
+  ($("avatar") as HTMLImageElement).alt = me.name; // the name is hidden on small phones
   const h = happiness(state);
   $("mood").textContent = `is ${mood(h)}`;
   ($("feed") as HTMLButtonElement).disabled = state.fish <= 0 || activity !== null;
@@ -1018,8 +1037,7 @@ renderer.setAnimationLoop(() => {
   hw.update(view.scene, t);
   // Gentle camera drift inside areas so the place feels alive.
   if (view !== mapView) {
-    camera.position.copy(view.camPos).add(new THREE.Vector3(Math.sin(t * 0.15) * 0.6, Math.sin(t * 0.21) * 0.2, 0));
-    camera.lookAt(view.camLook);
+    placeCamera(view, new THREE.Vector3(Math.sin(t * 0.15) * 0.6, Math.sin(t * 0.21) * 0.2, 0));
   }
 
   // Walk toward the target, face the way we're going; on the map, arriving at

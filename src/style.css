@@ -388,3 +388,69 @@ body.halloween #title { background: linear-gradient(90deg, rgba(40, 10, 60, .6),
 .grown-ups { margin: 10px 0; font-size: .95rem; }
 .grown-ups summary { cursor: pointer; font-weight: 700; opacity: .75; }
 .code-inline { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .12em; }
+
+/* ---------- responsive: phones, tablets, big screens --------------------------- */
+input { font-size: 16px; } /* below 16px iPhone zooms in when you tap a text box */
+
+/* Big screens: bigger chess board. */
+@media (min-width: 1400px) and (min-height: 900px) {
+  .chess { grid-template-columns: repeat(8, min(64px, 7dvh)); }
+}
+
+/* Phones and small tablets: buttons show just their emoji, chips get tighter,
+   so the top bar is 2 rows instead of 4. */
+@media (max-width: 760px), (max-height: 500px) {
+  .lbl, #mood { display: none; }
+  #hud { gap: 6px; }
+  .stat { padding: 6px 10px; font-size: .95rem; }
+  .stat.who { padding: 3px 10px 3px 3px; }
+  #avatar { width: 30px; height: 30px; }
+  .pill { padding: 8px 12px; min-height: 44px; font-size: 1.15rem; }
+  #hint { font-size: .85rem; padding: 6px 12px; max-width: calc(100vw - 24px); text-align: center; }
+  .panel h2 { font-size: 1.1rem; }
+  .panel p { font-size: 1rem; margin: 6px 0; }
+}
+
+/* Short landscape screens (phones on their side): one-row top bar, panels fit
+   the height and scroll, quiz and care panels sit at the side so the scene shows. */
+@media (max-height: 500px) and (orientation: landscape) {
+  #hud { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+  #hud::-webkit-scrollbar { display: none; }
+  .stat, .pill { flex: none; }
+  .pill { min-height: 40px; padding: 6px 10px; }
+  .panel {
+    inset: 58px 8px 8px auto !important; transform: none !important; margin: 0;
+    width: min(560px, calc(100vw - 16px)); max-height: none; border-radius: 16px;
+    padding: 12px 14px;
+  }
+  #quiz { width: min(400px, 48vw); }
+  #quiz-choices { gap: 6px; margin: 8px 0; }
+  #quiz-choices button { min-height: 44px; padding: 8px 12px; font-size: 1rem; }
+  .cards { max-height: none; }
+  #care {
+    left: 8px; right: auto; top: 58px; bottom: 8px; width: min(300px, 40vw);
+    max-height: none; padding: 8px 10px;
+  }
+  #needs { grid-template-columns: 1fr 1fr; }
+  #care-actions { grid-template-columns: repeat(2, 1fr); }
+  #hint { bottom: 6px; }
+  .chess { grid-template-columns: repeat(8, min(34px, 9dvh)); }
+  .chess-legend { display: none; }
+}
+/* Narrow phones held upright: tighten so the top bar is 2 rows. */
+@media (max-width: 480px) and (orientation: portrait) {
+  #hud { gap: 5px; inset: max(6px, env(safe-area-inset-top)) 6px auto 6px; }
+  .pill { padding: 6px 9px; min-height: 42px; }
+  .stat { padding: 5px 8px; }
+}
+@media (max-width: 480px) and (orientation: portrait) {
+  /* Exactly 2 rows on any phone: 4 info chips (2 columns each), then 8 buttons. */
+  #hud { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); }
+  #hud .stat { grid-column: span 2; justify-content: center; min-width: 0; overflow: hidden; white-space: nowrap; font-size: .85rem; }
+  #hud .stat strong, #catname { overflow: hidden; text-overflow: ellipsis; }
+  #hud .stat .big { font-size: .95rem; }
+  #hud .pill { min-width: 0; padding: 4px 0; font-size: 1.05rem; }
+}
+@media (max-width: 480px) and (orientation: portrait) {
+  #catname { display: none; } /* the face says who it is; the name is on the home screen */
+}

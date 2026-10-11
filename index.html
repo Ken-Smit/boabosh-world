@@ -29,11 +29,12 @@
   <div class="stat" title="Food"><span class="big">🐟</span><strong id="fish">0</strong></div>
   <div class="stat" id="brain-stat" title="Brain power: right answers since your last game"><span class="big">🧠</span><strong id="brain-hud">0/3</strong></div>
   <div class="stat who"><img id="avatar" src="/boabosh-face.jpg" alt="" width="36" height="36" /><span id="catname">…</span> <em id="mood">…</em></div>
-  <button id="feed" class="pill">Feed</button>
-  <button id="home-btn" class="pill">🏠 Home</button>
-  <button id="shop-btn" class="pill">🛍️ Shop</button>
-  <button id="wardrobe-btn" class="pill">👗 Dress up</button>
-  <button id="tag-btn" class="pill ghost">🐾 Picture code</button>
+  <!-- On small screens only the emoji shows (.lbl hides); aria-label keeps the name for screen readers. -->
+  <button id="feed" class="pill" aria-label="Feed">🍽️<span class="lbl"> Feed</span></button>
+  <button id="home-btn" class="pill" aria-label="Home">🏠<span class="lbl"> Home</span></button>
+  <button id="shop-btn" class="pill" aria-label="Shop">🛍️<span class="lbl"> Shop</span></button>
+  <button id="wardrobe-btn" class="pill" aria-label="Dress up">👗<span class="lbl"> Dress up</span></button>
+  <button id="tag-btn" class="pill ghost" aria-label="Picture code">🐾<span class="lbl"> Picture code</span></button>
   <button id="hw-btn" class="pill ghost icon" aria-label="Halloween decorations" aria-pressed="false" title="Halloween decorations">🎃</button>
   <button id="snd" class="pill ghost icon" aria-label="Sound on" aria-pressed="true">🔊</button>
   <button id="mus" class="pill ghost icon" aria-label="Music on" aria-pressed="true">🎵</button>
