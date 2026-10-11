@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Boabosh's World</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;700;800&display=swap" />
+<!-- Logo: browser tab, home-screen shortcut (iPhone/iPad/Android) and installed desktop app. -->
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+<link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+<link rel="manifest" href="/manifest.webmanifest" />
+<meta name="theme-color" content="#8fcdf2" />
+<meta name="apple-mobile-web-app-title" content="Boabosh" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<link rel="stylesheet" href="/src/style.css" />
+</head>
+<body>
+<canvas id="scene"></canvas>
+<!-- Anime "still" grade: warm light leak + soft vignette over the 3D scene. -->
+<div id="grade" aria-hidden="true"></div>
+
+<header id="hud">
+  <div class="stat" title="Coins"><span class="big">🪙</span><strong id="coins">0</strong></div>
+  <div class="stat" title="Food"><span class="big">🐟</span><strong id="fish">0</strong></div>
+  <div class="stat" id="brain-stat" title="Brain power: right answers since your last game"><span class="big">🧠</span><strong id="brain-hud">0/3</strong></div>
+  <div class="stat who"><img id="avatar" src="/boabosh-face.jpg" alt="" width="36" height="36" /><span id="catname">…</span> <em id="mood">…</em></div>
+  <button id="feed" class="pill">Feed</button>
+  <button id="home-btn" class="pill">🏠 Home</button>
+  <button id="shop-btn" class="pill">🛍️ Shop</button>
+  <button id="wardrobe-btn" class="pill">👗 Dress up</button>
+  <button id="tag-btn" class="pill ghost">🐾 Picture code</button>
+  <button id="hw-btn" class="pill ghost icon" aria-label="Halloween decorations" aria-pressed="false" title="Halloween decorations">🎃</button>
+  <button id="snd" class="pill ghost icon" aria-label="Sound on" aria-pressed="true">🔊</button>
+  <button id="mus" class="pill ghost icon" aria-label="Music on" aria-pressed="true">🎵</button>
+</header>
+
+<p id="hint">Tap a glowing spot on the map to visit it. Tap Boabosh to pet!</p>
+
+<!-- Quiz -->
+<section id="quiz" class="panel" hidden>
+  <h2 id="quiz-area"></h2>
+  <p id="quiz-q"></p>
+  <div id="quiz-choices"></div>
+  <p id="quiz-feedback" aria-live="polite"></p>
+  <button id="quiz-close" class="pill ghost">Back to the map</button>
+</section>
+
+<!-- Wardrobe -->
+<section id="wardrobe" class="panel wide" hidden>
+  <h2>Dress up <span id="wardrobe-name"></span></h2>
+  <div id="wardrobe-tabs" class="tabs" role="tablist"></div>
+  <div id="wardrobe-items" class="cards"></div>
+  <p id="wardrobe-msg" class="muted" aria-live="polite"></p>
+  <button id="wardrobe-close" class="pill ghost">Done</button>
+</section>
+
+<!-- Shop -->
+<section id="shop" class="panel wide" hidden>
+  <h2>🛍️ Shop <span class="purse">🪙 <strong id="shop-coins">0</strong></span></h2>
+  <p class="muted">Earn 🪙 10 coins for every right answer, and 50 more for finishing a place!</p>
+  <div id="shop-tabs" class="tabs" role="tablist"></div>
+  <div id="shop-items" class="cards"></div>
+  <p id="shop-msg" aria-live="polite"></p>
+  <button id="shop-close" class="pill ghost">Done</button>
+</section>
+
+<!-- Decorate the home -->
+<section id="decorate" class="panel wide" hidden>
+  <h2>🎨 Decorate the home</h2>
+  <div id="decorate-tabs" class="tabs" role="tablist"></div>
+  <div id="decorate-items" class="cards"></div>
+  <p id="decorate-msg" class="muted" aria-live="polite"></p>
+  <button id="decorate-close" class="pill ghost">Done</button>
+</section>
+
+<!-- Game Garden: pick a game -->
+<section id="arcade" class="panel wide" hidden>
+  <h2>🎮 Game Garden <span class="purse">🪙 <strong id="arcade-coins">0</strong></span></h2>
+  <div id="brain" class="brain" aria-live="polite"></div>
+  <div id="arcade-games" class="cards"></div>
+  <p id="arcade-msg" aria-live="polite"></p>
+  <div class="row">
+    <button id="arcade-learn" class="pill">📚 Go learn</button>
+    <button id="arcade-leave" class="pill ghost">🗺️ Back to the map</button>
+  </div>
+</section>
+
+<!-- A game in progress -->
+<section id="game" class="panel wide" hidden>
+  <h2 id="game-title"></h2>
+  <p id="game-status" aria-live="polite"></p>
+  <div id="game-board"></div>
+  <button id="game-back" class="pill ghost">Back to games</button>
+</section>
+
+<!-- Care: only at home -->
+<aside id="care" hidden>
+  <h2><span id="care-name">Boabosh</span>'s needs</h2>
+  <div id="needs"></div>
+  <div id="care-actions">
+    <button id="c-feed" class="pill">🐟 Feed</button>
+    <button id="c-water" class="pill">💧 Water</button>
+    <button id="c-pet" class="pill">✋ Pet</button>
+    <button id="c-brush" class="pill">🪮 Brush</button>
+    <button id="c-play" class="pill">🧶 Play</button>
+    <button id="c-nap" class="pill">😴 Nap</button>
+    <button id="c-litter" class="pill">🧹 Litter</button>
+    <button id="c-scratch" class="pill">🐾 Scratch</button>
+    <button id="c-decorate" class="pill ghost">🎨 Decorate</button>
+  </div>
+  <div id="toy-pick" class="cards small" hidden></div>
+  <button id="c-leave" class="pill ghost">🗺️ Back to the map</button>
+</aside>
+
+<!-- Collar tag / cross-device -->
+<section id="tag" class="panel wide" hidden>
+  <h2>🐾 Picture code</h2>
+  <p class="muted">These 8 pictures are your cat's secret code. Tap them in this order on another device to bring your cats along!</p>
+  <ol id="tag-pics" class="pic-code" aria-label="Your picture code"></ol>
+  <p class="secret">🔒 Keep it secret! Only show it to a grown-up or your own device.</p>
+  <hr />
+  <h3>Bring cats from another device</h3>
+  <p class="muted">Tap the pictures in order, just like on your other device.</p>
+  <ol id="tag-slots" class="pic-code slots" aria-label="Pictures you picked"></ol>
+  <div id="tag-grid" class="pic-grid" role="group" aria-label="Pick a picture"></div>
+  <div class="row">
+    <button id="tag-undo" class="pill ghost">⌫ Undo</button>
+    <button id="tag-load" class="pill" disabled>Fetch my cats 🐾</button>
+  </div>
+  <p id="tag-msg" aria-live="polite"></p>
+  <details class="grown-ups">
+    <summary>For grown-ups: use letters instead</summary>
+    <p class="muted">Your letter tag: <strong id="tag-code" class="code-inline"></strong></p>
+    <label for="tag-input">Type a letter tag</label>
+    <input id="tag-input" maxlength="8" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="ABCD2345" />
+    <button id="tag-load-letters" class="pill ghost">Fetch with letters</button>
+  </details>
+  <button id="tag-close" class="pill ghost">Close</button>
+</section>
+
+<div id="fade" aria-hidden="true"></div>
+
+<!-- Title screen -->
+<section id="title">
+  <div class="title-card">
+    <p id="title-hw" class="hw-only">🎃 Happy Halloween! 🦇</p>
+    <h1>Boabosh's World</h1>
+    <p>Explore the forest, the mountain and the lab with Boabosh. Answer questions, earn fish, find toys.</p>
+    <button id="start" class="pill">Start the adventure</button>
+  </div>
+</section>
+
+<p id="offline" hidden>Playing offline — progress saves on this device only.</p>
+
+<script type="module" src="/src/main.ts"></script>
+</body>
+</html>

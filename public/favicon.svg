@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <title>Boabosh's World</title>
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="40%" r="75%">
+      <stop offset="0" stop-color="#d8f1ff"/>
+      <stop offset="0.55" stop-color="#8fcdf2"/>
+      <stop offset="1" stop-color="#4a96d4"/>
+    </radialGradient>
+    <radialGradient id="fur" cx="50%" cy="35%" r="70%">
+      <stop offset="0" stop-color="#dba066"/>
+      <stop offset="1" stop-color="#b97a42"/>
+    </radialGradient>
+    <radialGradient id="iris" cx="45%" cy="40%" r="60%">
+      <stop offset="0" stop-color="#c8ec7a"/>
+      <stop offset="1" stop-color="#6aa82e"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <!-- Soft paw prints in the background. -->
+  <g fill="#ffffff" opacity="0.55">
+    <g transform="translate(70 92) rotate(-20)"><ellipse cx="0" cy="12" rx="17" ry="14"/><circle cx="-16" cy="-8" r="7"/><circle cx="-5" cy="-15" r="7"/><circle cx="7" cy="-15" r="7"/><circle cx="17" cy="-7" r="7"/></g>
+    <g transform="translate(446 420) rotate(18)"><ellipse cx="0" cy="12" rx="17" ry="14"/><circle cx="-16" cy="-8" r="7"/><circle cx="-5" cy="-15" r="7"/><circle cx="7" cy="-15" r="7"/><circle cx="17" cy="-7" r="7"/></g>
+  </g>
+
+  <g id="face" stroke="#4a2a18" stroke-width="10" stroke-linejoin="round" stroke-linecap="round">
+    <!-- ears -->
+    <path d="M118 238 L128 70 L236 156 Z" fill="url(#fur)"/>
+    <path d="M394 238 L384 70 L276 156 Z" fill="url(#fur)"/>
+    <path d="M146 196 L150 112 L208 160 Z" fill="#f4a3ab" stroke="none"/>
+    <path d="M366 196 L362 112 L304 160 Z" fill="#f4a3ab" stroke="none"/>
+    <!-- head with cheek fluff -->
+    <path d="M256 128 C356 128 430 186 436 276 L460 296 L432 306 L448 330 L420 334
+             C398 404 334 446 256 446 C178 446 114 404 92 334 L64 330 L80 306 L52 296 L76 276
+             C82 186 156 128 256 128 Z" fill="url(#fur)"/>
+    <!-- tabby M and crown stripes -->
+    <g stroke="#5b3519" stroke-width="13" fill="none">
+      <path d="M210 150 L222 206"/>
+      <path d="M240 140 L248 194"/>
+      <path d="M272 140 L264 194"/>
+      <path d="M302 150 L290 206"/>
+      <!-- cheek stripes -->
+      <path d="M96 270 L148 282"/><path d="M92 304 L142 304"/>
+      <path d="M416 270 L364 282"/><path d="M420 304 L370 304"/>
+    </g>
+    <!-- muzzle -->
+    <ellipse cx="226" cy="352" rx="48" ry="38" fill="#f6e6c8" stroke="none"/>
+    <ellipse cx="286" cy="352" rx="48" ry="38" fill="#f6e6c8" stroke="none"/>
+    <ellipse cx="256" cy="392" rx="40" ry="28" fill="#f6e6c8" stroke="none"/>
+    <!-- eyes -->
+    <ellipse cx="190" cy="272" rx="44" ry="48" fill="url(#iris)"/>
+    <ellipse cx="322" cy="272" rx="44" ry="48" fill="url(#iris)"/>
+    <ellipse cx="192" cy="278" rx="20" ry="30" fill="#1c140e" stroke="none"/>
+    <ellipse cx="320" cy="278" rx="20" ry="30" fill="#1c140e" stroke="none"/>
+    <circle cx="176" cy="254" r="12" fill="#fff" stroke="none"/>
+    <circle cx="306" cy="254" r="12" fill="#fff" stroke="none"/>
+    <circle cx="204" cy="296" r="5" fill="#fff" stroke="none"/>
+    <circle cx="334" cy="296" r="5" fill="#fff" stroke="none"/>
+    <!-- nose + smile -->
+    <path d="M238 332 L274 332 L256 352 Z" fill="#f08f9e" stroke-width="6"/>
+    <path d="M256 352 V364 M256 364 C246 382 226 384 216 372 M256 364 C266 382 286 384 296 372" fill="none" stroke-width="7"/>
+    <!-- whiskers -->
+    <g stroke="#ffffff" stroke-width="5">
+      <path d="M190 352 L60 336"/><path d="M190 366 L62 376"/>
+      <path d="M322 352 L452 336"/><path d="M322 366 L450 376"/>
+    </g>
+  </g>
+</svg>
