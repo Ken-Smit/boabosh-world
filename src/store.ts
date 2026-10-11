@@ -92,3 +92,27 @@ export async function restore(code: string): Promise<State> {
   save(remote);
   return remote;
 }
+
+// --- pairing: a 4-picture code that works once, for 10 minutes ---------------
+
+/** Make a short-lived 4-letter pairing code for this device's save. */
+export async function pairCreate(current: State): Promise<string> {
+  if (!sb) throw new Error("offline");
+  clearTimeout(timer);
+  const code = myCode();
+  // Push now so the other device gets the very latest cats.
+  const put = await sb.rpc("save_put", { p_code: code, p_data: current });
+  if (put.error) throw new Error(put.error.message);
+  const { data, error } = await sb.rpc("pair_create", { p_code: code });
+  if (error) throw new Error(error.message);
+  return data as string;
+}
+
+/** Swap a 4-letter pairing code for the save it points at, and adopt it. */
+export async function pairRedeem(pics: string): Promise<State> {
+  if (!sb) throw new Error("offline");
+  const { data, error } = await sb.rpc("pair_redeem", { p_pics: pics });
+  if (error) throw new Error(error.message.includes("too many") ? "Lots of people are trying codes right now. Wait a minute and try again!" : error.message);
+  if (!data) throw new Error("No cat found with that tag.");
+  return restore(data as string);
+}

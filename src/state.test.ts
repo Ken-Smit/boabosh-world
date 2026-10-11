@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import {
   newState, applyAnswer, feed, wear, newer, needs, happiness, makeCode, CODE_RE, migrate, buy, furnish,
   setActive, activeCat, cleanLitter, water, COINS_PER_ANSWER, COINS_PER_LESSON, COINS_PER_CHORE, type State,
-  canPlay, startGame, winGame, GAMES, BRAIN_PER_GAME, PICTURES, codeToPictures, picturesToCode,
+  canPlay, startGame, winGame, GAMES, BRAIN_PER_GAME, drain, DRAIN, PICTURES, codeToPictures, picturesToCode,
 } from "./state.ts";
 import { CATALOG, BY_ID, STARTER } from "./shop.ts";
 
@@ -233,4 +233,35 @@ test("picture codes: one distinct picture per code letter, round-trips every cod
     assert.equal(picturesToCode(pics), c);
   }
   assert.equal(codeToPictures("A0")[1], -1); // a lookalike glyph never appears in real codes
+});
+
+test("playing makes the cat hungry and tired: minutes, answers and games all use up needs", () => {
+  const s = newState(0);
+  const after10min = Array.from({ length: 10 }).reduce<State>((x) => drain(x, DRAIN.minute, 0), s);
+  const n = needs(after10min, 0);
+  assert.equal(n.food, 92);
+  assert.equal(n.water, 90);
+  assert.ok(n.energy < 100 && n.love < 100 && n.fun < 100 && n.clean < 100);
+  const answered = applyAnswer(s, "forest", false, 0).state; // even a wrong answer is effort
+  assert.equal(needs(answered, 0).food, 99);
+  const played = startGame({ ...s, coins: 100, sinceGame: 3 }, "rps", 0);
+  assert.equal(needs(played, 0).energy, 95);
+  assert.equal(needs(played, 0).fun, 100); // a game is fun, though
+});
+
+test("needs never drop below the floor, and care fills them back up", () => {
+  let s = newState(0);
+  for (let i = 0; i < 500; i++) s = drain(s, DRAIN.minute, 0);
+  const n = needs(s, 0);
+  assert.ok(Object.values(n).every((v) => v === 10), JSON.stringify(n));
+  assert.equal(needs(feed(s, 0), 0).food, 100);
+});
+
+test("only the cat you're playing with gets tired", () => {
+  const r = buy({ ...newState(0), coins: 1000 }, "cat-pepper", 0);
+  assert.ok(r.ok);
+  if (!r.ok) return;
+  const s = drain(r.state, { food: 30 }, 0);
+  assert.equal(needs(s, 0, s.cats[0]).food, 70);
+  assert.equal(needs(s, 0, s.cats[1]).food, 100);
 });

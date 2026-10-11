@@ -24,11 +24,16 @@ Works immediately with no Supabase — progress saves to this browser only.
 3. `cp .env.example .env`, fill in Project Settings → API (URL + anon key).
 4. Restart `npm run dev`.
 
-Each browser gets a random 8-character tag, shown to kids as a **picture
-code**: 8 pictures, one per letter (`PICTURES` in `src/state.ts`). On another
-device, "🐾 Picture code" → tap the same 8 pictures in order → "Fetch my cats".
-Grown-ups can still type the letters under "use letters instead". Same code
-either way, so older letter tags keep working.
+Each browser gets a random 8-character tag (its permanent save key). To move
+cats, kids use a **picture code**: "🐾 Picture code" → "Make a picture code"
+on the old device shows 4 pictures (`pair_create`); tapping them on the new
+device (`pair_redeem`) fetches the cats. A picture code works **once, for 10
+minutes**. Grown-ups can also type the permanent 8-letter tag under "use
+letters instead".
+
+Why not a permanent 4-picture code: 31⁴ ≈ 920,000 codes can be guessed in
+minutes. Pairing codes expire, are single-use, and wrong guesses are capped at
+30 a minute across everyone, so guessing can't keep up.
 
 ### Security notes
 

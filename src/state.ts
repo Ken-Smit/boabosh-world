@@ -171,6 +171,32 @@ export function needs(s: State, now = Date.now(), c: Pet = activeCat(s)): Record
   };
 }
 
+// Playing makes a cat hungry and tired too, not just time passing: every
+// minute in the game and every answer uses up a little of each need. Points
+// are on the same 10–100 scale as `needs`.
+export const DRAIN = {
+  minute: { food: 0.8, water: 1, fun: 0.5, love: 0.8, energy: 0.7, clean: 0.4 },
+  answer: { food: 1, water: 1, energy: 0.8, clean: 0.3 },
+  game: { food: 2, water: 2, energy: 5 },
+} satisfies Record<string, Partial<Record<Need, number>>>;
+
+const FIELD = { food: "fed", water: "watered", fun: "played", love: "petted", energy: "rested" } as const;
+
+/** Use up need points by moving each "last cared for" time back. Never below the floor of 10. */
+export function drain(s: State, points: Partial<Record<Need, number>>, now = Date.now()): State {
+  const back = (since: number, need: Need) => {
+    const span = DECAY[need] * HOUR;
+    return Math.max(now - span, since - ((points[need] ?? 0) / 90) * span);
+  };
+  const cats = s.cats.map((c) => {
+    if (c.id !== s.active) return c;
+    const next = { ...c };
+    for (const need of Object.keys(FIELD) as (keyof typeof FIELD)[]) next[FIELD[need]] = back(c[FIELD[need]], need);
+    return next;
+  });
+  return { ...s, cats, home: { ...s.home, litterCleaned: back(s.home.litterCleaned, "clean") }, updatedAt: now };
+}
+
 export const happiness = (s: State, now = Date.now()): number => {
   const n = Object.values(needs(s, now));
   return Math.round(n.reduce((a, b) => a + b, 0) / n.length);
@@ -200,7 +226,7 @@ export function applyAnswer(
   const after = Math.min(GRADE_MAX, Math.max(GRADE_MIN, before + (correct ? GRADE_UP : -GRADE_DOWN)));
   const gradeUp = Math.floor(after) > Math.floor(before) ? Math.floor(after) : null;
   const seen = key ? { ...s.seen, [area]: [...s.seen[area].filter((k) => k !== key), key].slice(-SEEN_MAX) } : s.seen;
-  const base = { ...s, grade: { ...s.grade, [area]: after }, seen, updatedAt: now };
+  const base = { ...drain(s, DRAIN.answer, now), grade: { ...s.grade, [area]: after }, seen, updatedAt: now };
   if (!correct) return { state: base, unlocked: [], coins: 0, lesson: false, gradeUp: null };
 
   const cleared = { ...s.cleared, [area]: s.cleared[area] + 1 };
@@ -250,7 +276,8 @@ export function canPlay(s: State, g: Game): PlayCheck {
 /** Pay for a game and reset the brain meter. No-op if not allowed. */
 export function startGame(s: State, g: Game, now = Date.now()): State {
   if (!canPlay(s, g).ok) return s;
-  return withCat({ ...s, coins: s.coins - GAMES[g].price, sinceGame: 0 }, (c) => ({ ...c, played: now }), now);
+  const tired = drain(s, DRAIN.game, now);
+  return withCat({ ...tired, coins: s.coins - GAMES[g].price, sinceGame: 0 }, (c) => ({ ...c, played: now }), now);
 }
 export const winGame = (s: State, g: Game, now = Date.now()): State =>
   ({ ...s, trophies: { ...s.trophies, [g]: s.trophies[g] + 1 }, updatedAt: now });

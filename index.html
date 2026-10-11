@@ -120,12 +120,14 @@
 <!-- Collar tag / cross-device -->
 <section id="tag" class="panel wide" hidden>
   <h2>🐾 Picture code</h2>
-  <p class="muted">These 8 pictures are your cat's secret code. Tap them in this order on another device to bring your cats along!</p>
-  <ol id="tag-pics" class="pic-code" aria-label="Your picture code"></ol>
-  <p class="secret">🔒 Keep it secret! Only show it to a grown-up or your own device.</p>
+  <h3>Send my cats to another device</h3>
+  <p class="muted">Make a code, then tap the same 4 pictures on the other device.</p>
+  <button id="tag-make" class="pill">✨ Make a picture code</button>
+  <ol id="tag-pics" class="pic-code" aria-label="Your picture code" hidden></ol>
+  <p id="tag-timer" class="secret" hidden></p>
   <hr />
-  <h3>Bring cats from another device</h3>
-  <p class="muted">Tap the pictures in order, just like on your other device.</p>
+  <h3>Get my cats from another device</h3>
+  <p class="muted">On your other device, tap “Make a picture code”. Then tap those 4 pictures here.</p>
   <ol id="tag-slots" class="pic-code slots" aria-label="Pictures you picked"></ol>
   <div id="tag-grid" class="pic-grid" role="group" aria-label="Pick a picture"></div>
   <div class="row">
@@ -135,7 +137,7 @@
   <p id="tag-msg" aria-live="polite"></p>
   <details class="grown-ups">
     <summary>For grown-ups: use letters instead</summary>
-    <p class="muted">Your letter tag: <strong id="tag-code" class="code-inline"></strong></p>
+    <p class="muted">Your permanent letter tag (works any time, keep it private): <strong id="tag-code" class="code-inline"></strong></p>
     <label for="tag-input">Type a letter tag</label>
     <input id="tag-input" maxlength="8" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="ABCD2345" />
     <button id="tag-load-letters" class="pill ghost">Fetch with letters</button>

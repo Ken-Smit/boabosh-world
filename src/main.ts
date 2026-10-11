@@ -3,11 +3,11 @@ import { OutlineEffect } from "three/examples/jsm/effects/OutlineEffect.js";
 import { toonify } from "./toon.ts";
 import {
   AREAS, type Area, type State, type Need, applyAnswer, feed, wear, happiness, mood, activeCat, needs, buy, owns,
-  furnish, setActive, water, play, pet, nap, cleanLitter, PICTURES, codeToPictures, picturesToCode, LESSON, COINS_PER_ANSWER, COINS_PER_LESSON, GAMES, BRAIN_PER_GAME, canPlay, startGame, winGame, type Game,
+  furnish, setActive, water, play, pet, nap, cleanLitter, drain, DRAIN, PICTURES, codeToPictures, picturesToCode, LESSON, COINS_PER_ANSWER, COINS_PER_LESSON, GAMES, BRAIN_PER_GAME, canPlay, startGame, winGame, type Game,
 } from "./state.ts";
 import { BY_ID, CATALOG, COATS, SHOP_TABS, SLOT_OF, HOME_SLOT_OF, type Category, type ShopItem } from "./shop.ts";
 import { buildHome, BED_SPOT, type HomeScene } from "./home.ts";
-import { boot, save, restore, logAttempt, myCode, online } from "./store.ts";
+import { boot, save, restore, logAttempt, myCode, online, pairCreate, pairRedeem } from "./store.ts";
 import { makeCat, dress, type Cat } from "./cat.ts";
 import { buildWorld, HOME_SIGN } from "./world.ts";
 import { buildArea, type AreaScene } from "./areas.ts";
@@ -372,6 +372,7 @@ function answer(area: Area, i: number, btn: HTMLButtonElement) {
 
   if (r.gradeUp) fb.textContent += ` ⭐ Wow — you're ready for Grade ${r.gradeUp} questions!`;
   quizHeader(area);
+  setTimeout(warnLowNeeds, 2500); // answers tire the cat too; nudge after the cheer, not over it
   setTimeout(() => { if (!$("quiz").hidden) nextQuestion(area); }, finished ? 5000 : correct ? 1600 : 2600);
 }
 
@@ -823,16 +824,51 @@ $("c-play").onclick = () => {
   })), ...(toys.length ? [] : [empty("No toys yet!", "toys")]));
   box.hidden = false;
 };
+// Playing uses up needs: every minute the game is open and on screen, a little
+// of each goes down. Paused when the tab is hidden or the title screen is up.
+setInterval(() => {
+  if (document.visibilityState !== "visible" || !$("title").hidden) return;
+  state = drain(state, DRAIN.minute);
+  persist();
+  warnLowNeeds();
+}, 60_000);
+
+// When a need gets low, Boabosh says so (once, until it's looked after).
+const LOW = 35;
+const warned = new Set<Need>();
+const WARN: Partial<Record<Need, string>> = {
+  food: "🐟 {name} is getting hungry! Tap Feed or visit home 🏠",
+  water: "💧 {name} is thirsty! Give some water at home 🏠",
+  energy: "😴 {name} is getting sleepy. Time for a nap at home 🏠",
+  love: "💕 {name} wants some love. Tap {name} to pet!",
+  clean: "🧹 The litter box needs scooping at home 🏠",
+};
+function warnLowNeeds() {
+  const n = needs(state);
+  for (const k of Object.keys(WARN) as Need[]) {
+    if (n[k] >= LOW + 15) warned.delete(k); // cared for: allowed to warn again later
+    if (n[k] < LOW && !warned.has(k) && !activity) {
+      warned.add(k);
+      hint.textContent = WARN[k]!.replaceAll("{name}", activeCat(state).name);
+      sfx.meow(k === "energy" ? "sleepy" : "curious");
+      return; // one nudge at a time
+    }
+  }
+}
+
 // Needs run down in real time; refresh the bars and the home now and then.
 setInterval(() => { if (view === homeView) render(); else $("home-btn").classList.toggle("alert", Object.values(needs(state)).some((n) => n < 40)); }, 5000);
 
 // ---------- collar tag (cross-device) --------------------------------------
 // ---------- picture code (cross-device) ------------------------------------------
+// A 4-picture pairing code: made on the old device, works once, for 10 minutes.
+const PAIR = 4;
 let picks: number[] = [];
+let pairTimer: ReturnType<typeof setInterval> | undefined;
 
-/** A row of 8 numbered picture tiles; empty slots show the number. */
+/** A row of numbered picture tiles; empty slots show the number. */
 function picRow(box: HTMLElement, pics: number[], showEmpty = false) {
-  box.replaceChildren(...Array.from({ length: 8 }, (_, i) => {
+  box.replaceChildren(...Array.from({ length: PAIR }, (_, i) => {
     const li = document.createElement("li");
     const p = PICTURES[pics[i] ?? -1];
     li.textContent = p ? p[0] : showEmpty ? String(i + 1) : "";
@@ -844,7 +880,7 @@ function picRow(box: HTMLElement, pics: number[], showEmpty = false) {
 
 function drawPicks() {
   picRow($("tag-slots"), picks, true);
-  ($("tag-load") as HTMLButtonElement).disabled = picks.length < 8;
+  ($("tag-load") as HTMLButtonElement).disabled = picks.length < PAIR;
   ($("tag-undo") as HTMLButtonElement).disabled = picks.length === 0;
 }
 
@@ -855,47 +891,86 @@ $("tag-grid").replaceChildren(...PICTURES.map(([emoji, name], i) => {
   b.title = name;
   b.setAttribute("aria-label", name);
   b.onclick = () => {
-    if (picks.length >= 8) return;
+    if (picks.length >= PAIR) return;
     picks.push(i);
     sfx.pop();
-    $("tag-msg").textContent = picks.length === 8 ? "All 8! Now tap “Fetch my cats” 🐾" : "";
+    $("tag-msg").textContent = picks.length === PAIR ? "All 4! Now tap “Fetch my cats” 🐾" : "";
     drawPicks();
   };
   return b;
 }));
 
+function resetPairing() {
+  clearInterval(pairTimer);
+  $("tag-pics").hidden = true;
+  $("tag-timer").hidden = true;
+  ($("tag-make") as HTMLButtonElement).disabled = false;
+}
+
 $("tag-btn").onclick = () => {
   closePanels();
-  picRow($("tag-pics"), codeToPictures(myCode()));
+  resetPairing();
   $("tag-code").textContent = myCode();
   picks = [];
   drawPicks();
-  $("tag-msg").textContent = online() ? "" : "Playing offline: picture codes work once the game is connected to the internet save (Supabase).";
+  $("tag-msg").textContent = online() ? "" : "Playing offline: picture codes need the internet save (Supabase).";
   $("tag").hidden = false;
 };
-$("tag-close").onclick = () => { $("tag").hidden = true; };
+$("tag-close").onclick = () => { $("tag").hidden = true; resetPairing(); };
 $("tag-undo").onclick = () => { picks.pop(); $("tag-msg").textContent = ""; drawPicks(); };
 
-async function fetchCats(code: string) {
+$("tag-make").onclick = async () => {
+  const make = $("tag-make") as HTMLButtonElement;
+  make.disabled = true;
+  $("tag-msg").textContent = "Making your code… ✨";
+  try {
+    const pics = await pairCreate(state);
+    picRow($("tag-pics"), codeToPictures(pics));
+    $("tag-pics").hidden = false;
+    $("tag-msg").textContent = "";
+    sfx.sparkle();
+    const until = Date.now() + 10 * 60_000;
+    const tick = () => {
+      const left = Math.max(0, until - Date.now());
+      const m = Math.floor(left / 60_000), sec = Math.floor((left % 60_000) / 1000);
+      $("tag-timer").textContent = left > 0
+        ? `⏳ Works for ${m}:${String(sec).padStart(2, "0")} · only once · keep it secret 🔒`
+        : "This code ran out. Make a new one!";
+      $("tag-timer").hidden = false;
+      if (left <= 0) { clearInterval(pairTimer); $("tag-pics").hidden = true; make.disabled = false; }
+    };
+    tick();
+    clearInterval(pairTimer);
+    pairTimer = setInterval(tick, 1000);
+  } catch (err) {
+    make.disabled = false;
+    $("tag-msg").textContent = (err as Error).message === "offline"
+      ? "Playing offline: picture codes need the internet save (Supabase)."
+      : "Couldn't make a code right now. Try again in a moment!";
+  }
+};
+
+async function fetchCats(get: () => Promise<State>) {
   $("tag-msg").textContent = "Looking for your cats… 🔍";
   try {
-    state = await restore(code);
+    state = await get();
     render();
     sfx.meow("happy");
     sfx.sparkle();
     $("tag-msg").textContent = `Found ${activeCat(state).name}! Welcome back 🎉`;
-    picRow($("tag-pics"), codeToPictures(myCode()));
     $("tag-code").textContent = myCode();
+    picks = [];
+    drawPicks();
   } catch (err) {
     sfx.nope();
     const msg = (err as Error).message;
     $("tag-msg").textContent = msg.startsWith("No cat")
-      ? "Hmm, no cats with those pictures. Check the order and try again! 🧐"
-      : msg;
+      ? "Hmm, no cats with those pictures. Check the order, or make a new code on the other device! 🧐"
+      : msg === "offline" ? "Playing offline: picture codes need the internet save (Supabase)." : msg;
   }
 }
-$("tag-load").onclick = () => { if (picks.length === 8) void fetchCats(picturesToCode(picks)); };
-$("tag-load-letters").onclick = () => void fetchCats(($("tag-input") as HTMLInputElement).value);
+$("tag-load").onclick = () => { if (picks.length === PAIR) void fetchCats(() => pairRedeem(picturesToCode(picks))); };
+$("tag-load-letters").onclick = () => void fetchCats(() => restore(($("tag-input") as HTMLInputElement).value));
 
 $("offline").hidden = online();
 
