@@ -157,6 +157,11 @@ let pendingAction: (() => void) | null = null; // at home: walk somewhere, then 
 type View = Pick<AreaScene, "scene" | "camPos" | "camLook" | "update">;
 const mapView: View = { scene, camPos: camera.position.clone(), camLook: new THREE.Vector3(0, 0, -0.5), update: updateWorld };
 const areaViews = new Map<Area, AreaScene>(); // built on first visit, then reused
+// The top bar is 1–2 rows depending on the screen; panels sit just below it.
+new ResizeObserver(([e]) => {
+  document.documentElement.style.setProperty("--hud-h", `${Math.ceil(e!.target.getBoundingClientRect().bottom)}px`);
+}).observe(document.getElementById("hud")!);
+
 let view: View = mapView;
 addEventListener("resize", () => placeCamera(view)); // after `resize` has worked out pullBack
 placeCamera(view);

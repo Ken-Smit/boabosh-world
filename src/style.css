@@ -454,3 +454,10 @@ input { font-size: 16px; } /* below 16px iPhone zooms in when you tap a text box
 @media (max-width: 480px) and (orientation: portrait) {
   #catname { display: none; } /* the face says who it is; the name is on the home screen */
 }
+
+/* Side panels start below the top bar (its height is measured into --hud-h). */
+@media (min-width: 900px) { #care { top: calc(var(--hud-h, 74px) + 10px); max-height: calc(100dvh - var(--hud-h, 74px) - 20px); } }
+@media (max-height: 500px) and (orientation: landscape) {
+  #care { top: calc(var(--hud-h, 50px) + 6px); }
+  .panel { inset: calc(var(--hud-h, 50px) + 6px) 8px 8px auto !important; }
+}
