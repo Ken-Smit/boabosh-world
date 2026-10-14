@@ -31,6 +31,7 @@ export type Cat = {
   collarSlot: THREE.Group;
   glassesSlot: THREE.Group;
   backSlot: THREE.Group;
+  costumeSlot: THREE.Group;
 };
 
 /** Partial ring hugging a round part, centred on `facing` (radians, 0 = +z). */
@@ -273,9 +274,11 @@ export function makeCat(coat: Coat = COATS.caramel ?? { fur: FUR, stripe: STRIPE
   const backSlot = new THREE.Group();
   backSlot.position.set(0, 0.5, -0.3);
   group.add(backSlot);
+  const costumeSlot = new THREE.Group();
+  group.add(costumeSlot);
 
   group.traverse((o) => { if ((o as THREE.Mesh).isMesh) o.castShadow = true; });
-  return { group, tail, head, eyes, lids, tongue, hatSlot, collarSlot, glassesSlot, backSlot };
+  return { group, tail, head, eyes, lids, tongue, hatSlot, collarSlot, glassesSlot, backSlot, costumeSlot };
 }
 
 // ---------- clothes ----------------------------------------------------------
@@ -613,10 +616,69 @@ const BACK: Record<string, Build> = {
   },
 };
 
-const BUILDERS = { hat: HAT, collar: COLLAR, glasses: GLASSES, back: BACK } as const;
+// Costumes hug the torso (body capsule: r≈0.38 at y 0.42), leaving head and paws out.
+const suit = (c: number, flare = 0.43, h = 0.42, y = 0.5) => {
+  const m = new THREE.Mesh(new THREE.CylinderGeometry(0.4, flare, h, 20, 1, true), mat(c, { side: THREE.DoubleSide }));
+  m.scale.x = 1.06;
+  return at(m, 0, y, 0);
+};
+/** A cone sticking out of the suit's back at height y. */
+const spike = (y: number, c: number) => at(new THREE.Mesh(new THREE.ConeGeometry(0.05, 0.13, 6), mat(c)), 0, y, -0.43).rotateX(-Math.PI / 2);
+const COSTUME: Record<string, Build> = {
+  pumpkin: (c1, c2) => {
+    const g = grp(suit(c1, 0.46));
+    for (let i = 0; i < 10; i++) { // darker ribs
+      const a = (i / 10) * Math.PI * 2;
+      g.add(at(new THREE.Mesh(new THREE.BoxGeometry(0.025, 0.42, 0.02), mat(0xd9600f)), Math.sin(a) * 0.46, 0.5, Math.cos(a) * 0.44));
+      g.children.at(-1)!.rotation.y = a;
+    }
+    const face = mat(0x2a1a10);
+    for (const x of [-0.12, 0.12]) g.add(at(new THREE.Mesh(new THREE.CircleGeometry(0.05, 3), face), x, 0.58, 0.44));
+    const grin = new THREE.Mesh(new THREE.CircleGeometry(0.11, 16, Math.PI, Math.PI), face);
+    g.add(at(grin, 0, 0.46, 0.445), at(new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.03, 8), mat(c2)), 0, 0.72, 0));
+    return g;
+  },
+  ghost: (c1) => {
+    // A sheet that drapes to the floor, with a wavy hem of little bumps.
+    const g = grp(suit(c1, 0.52, 0.7, 0.38));
+    for (let i = 0; i < 14; i++) {
+      const a = (i / 14) * Math.PI * 2;
+      g.add(at(new THREE.Mesh(new THREE.SphereGeometry(0.07, 8, 6), mat(c1)), Math.sin(a) * 0.52 * 1.06, 0.04, Math.cos(a) * 0.52));
+    }
+    return g;
+  },
+  skeleton: (c1, c2) => {
+    const g = grp(suit(c1));
+    for (const [y, w] of [[0.62, 0.3], [0.54, 0.34], [0.46, 0.32], [0.38, 0.26]] as const) {
+      const rib = at(band(0.425, w * 3, 0, mat(c2), 0.022), 0, y, 0);
+      rib.scale.x = 1.06;
+      g.add(rib);
+    }
+    g.add(at(new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.4, 0.02), mat(c2)), 0, 0.5, 0.435)); // breastbone
+    g.add(at(new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.4, 0.02), mat(c2)), 0, 0.5, -0.435)); // spine
+    return g;
+  },
+  bee: (c1, c2) => {
+    const g = grp(suit(c1));
+    for (const y of [0.4, 0.54]) g.add(at(ring(0.425, 0.035, c2, 24), 0, y, 0));
+    g.children.slice(1).forEach((c) => (c.scale.x = 1.06));
+    const wings = BACK.wings!(0xeaf6ff, 0xffffff);
+    wings.position.set(0, 0.55, -0.4);
+    return grp(g, wings);
+  },
+  dino: (c1, c2) => {
+    const g = grp(suit(c1));
+    for (const y of [0.34, 0.46, 0.58, 0.7]) g.add(spike(y, c2)); // spikes down the back
+    const belly = new THREE.Mesh(new THREE.SphereGeometry(0.22, 14, 10), mat(0xd8efb0));
+    belly.scale.set(1, 1.1, 0.3);
+    return grp(g, at(belly, 0, 0.5, 0.38));
+  },
+};
 
-export function dress(cat: Cat, worn: Worn) {
-  const slots = { hat: cat.hatSlot, collar: cat.collarSlot, glasses: cat.glassesSlot, back: cat.backSlot };
+const BUILDERS = { hat: HAT, collar: COLLAR, glasses: GLASSES, back: BACK, costume: COSTUME } as const;
+
+export function dress(cat: Cat, worn: Partial<Worn>) {
+  const slots = { hat: cat.hatSlot, collar: cat.collarSlot, glasses: cat.glassesSlot, back: cat.backSlot, costume: cat.costumeSlot };
   for (const key of Object.keys(slots) as (keyof Worn)[]) {
     const slot = slots[key];
     slot.clear();

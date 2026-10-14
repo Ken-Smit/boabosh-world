@@ -6,7 +6,7 @@ import { BY_ID, CATS, STARTER, SLOT_OF, HOME_SLOT_OF } from "./shop.ts";
 export const AREAS = ["forest", "mountain", "lab"] as const;
 export type Area = (typeof AREAS)[number];
 
-export type Slot = "hat" | "collar" | "glasses" | "back";
+export type Slot = "hat" | "collar" | "glasses" | "back" | "costume";
 export type Worn = Record<Slot, string | null>;
 
 /** One cat. Each need is the time it was last looked after. */
@@ -87,7 +87,7 @@ export const COINS_PER_ANSWER = 10;
 export const COINS_PER_LESSON = 50;
 export const COINS_PER_CHORE = 2;
 
-const noWear = (): Worn => ({ hat: null, collar: null, glasses: null, back: null });
+const noWear = (): Worn => ({ hat: null, collar: null, glasses: null, back: null, costume: null });
 
 export const newPet = (id: string, name: string, coat: string, now: number): Pet =>
   ({ id, name, coat, worn: noWear(), fed: now, watered: now, played: now, petted: now, rested: now });

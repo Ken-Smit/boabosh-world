@@ -509,7 +509,7 @@ $("shop-btn").onclick = () => { closePanels(); $("shop-msg").textContent = ""; o
 $("shop-close").onclick = () => { $("shop").hidden = true; };
 
 // ---------- dress up: pick a cat, then clothes ------------------------------------
-type WardTab = "cats" | "hats" | "collars" | "glasses" | "backs";
+type WardTab = "cats" | "hats" | "collars" | "glasses" | "backs" | "costumes";
 let wardTab: WardTab = "hats";
 function openWardrobe(tab: WardTab = wardTab) {
   wardTab = tab;
@@ -518,6 +518,7 @@ function openWardrobe(tab: WardTab = wardTab) {
   tabs($("wardrobe-tabs"), [
     { key: "cats", label: "🐱 Cats" }, { key: "hats", label: "🎩 Hats" }, { key: "collars", label: "🎀 Collars" },
     { key: "glasses", label: "👓 Glasses" }, { key: "backs", label: "🦸 Capes & Wings" },
+    { key: "costumes", label: "🎭 Costumes" },
   ], tab, (k) => openWardrobe(k as WardTab));
   const box = $("wardrobe-items");
   if (tab === "cats") {

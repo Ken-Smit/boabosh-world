@@ -150,6 +150,32 @@
 
 <!-- Title screen -->
 <section id="title">
+  <!-- Halloween: bats flying across and two dancing skeletons -->
+  <div class="hw-only hw-scene" aria-hidden="true">
+    <svg width="0" height="0" style="position:absolute">
+      <symbol id="skel" viewBox="0 0 100 160">
+        <g fill="none" stroke="#f4f1e8" stroke-width="6" stroke-linecap="round">
+          <line x1="50" y1="40" x2="50" y2="95" />
+          <path d="M34 54h32M32 66h36M35 78h30" stroke-width="5" />
+          <g class="arm l"><line x1="44" y1="50" x2="18" y2="70" /><line x1="18" y1="70" x2="10" y2="44" /></g>
+          <g class="arm r"><line x1="56" y1="50" x2="82" y2="70" /><line x1="82" y1="70" x2="90" y2="44" /></g>
+          <g class="leg l"><line x1="46" y1="96" x2="36" y2="125" /><line x1="36" y1="125" x2="30" y2="152" /></g>
+          <g class="leg r"><line x1="54" y1="96" x2="64" y2="125" /><line x1="64" y1="125" x2="70" y2="152" /></g>
+        </g>
+        <circle cx="50" cy="22" r="18" fill="#f4f1e8" />
+        <circle cx="43" cy="21" r="5" fill="#2a1a3a" /><circle cx="57" cy="21" r="5" fill="#2a1a3a" />
+        <path d="M42 31q8 6 16 0" stroke="#2a1a3a" stroke-width="3" fill="none" stroke-linecap="round" />
+      </symbol>
+    </svg>
+    <span class="bat" style="--y:12%;--t:9s;--d:0s"></span>
+    <span class="bat" style="--y:26%;--t:12s;--d:-4s"></span>
+    <span class="bat" style="--y:8%;--t:10s;--d:-7s"></span>
+    <span class="bat" style="--y:38%;--t:14s;--d:-2s"></span>
+    <span class="bat" style="--y:18%;--t:11s;--d:-9s"></span>
+    <span class="bat" style="--y:30%;--t:8s;--d:-5s"></span>
+    <svg class="skeleton" style="--d:0s"><use href="#skel" /></svg>
+    <svg class="skeleton" style="--d:-.45s"><use href="#skel" /></svg>
+  </div>
   <div class="title-card">
     <p id="title-hw" class="hw-only">🎃 Happy Halloween! 🦇</p>
     <h1>Boabosh's World</h1>

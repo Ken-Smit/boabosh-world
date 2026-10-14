@@ -362,6 +362,23 @@ body.halloween #grade::before {
 }
 body.halloween #grade::after { background: radial-gradient(130% 100% at 50% 45%, transparent 55%, rgba(40, 10, 60, .35)); }
 body.halloween #title { background: linear-gradient(90deg, rgba(40, 10, 60, .6), rgba(60, 20, 10, .15) 55%, transparent), url("/boabosh.jpg") center / cover no-repeat; }
+/* Title screen: bats flap across the sky, skeletons dance bottom-right. */
+.hw-scene { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.bat { position: absolute; left: 0; top: var(--y); animation: bat-fly var(--t) linear var(--d) infinite; }
+.bat::before { content: "🦇"; display: block; font-size: clamp(1.6rem, 4vw, 2.6rem); animation: bat-flap .25s ease-in-out infinite alternate; }
+@keyframes bat-fly {
+  0% { transform: translate(-12vw, 0); } 25% { transform: translate(22vw, -4vh); } 50% { transform: translate(50vw, 3vh); }
+  75% { transform: translate(78vw, -3vh); } 100% { transform: translate(112vw, 0); }
+}
+@keyframes bat-flap { to { transform: scale(1, .55); } }
+.skeleton { position: absolute; bottom: 3vh; right: 6vw; width: clamp(70px, 12vw, 130px); height: clamp(112px, 19vw, 208px); overflow: visible; animation: skel-bounce .9s ease-in-out var(--d) infinite; }
+.skeleton + .skeleton { right: calc(6vw + clamp(80px, 14vw, 150px)); }
+.skeleton .arm, .skeleton .leg { transform-box: fill-box; animation: skel-swing .45s ease-in-out var(--d) infinite alternate; }
+.skeleton .arm.l { transform-origin: 100% 0; } .skeleton .arm.r { transform-origin: 0 0; animation-direction: alternate-reverse; }
+.skeleton .leg.l { transform-origin: 100% 0; animation-direction: alternate-reverse; } .skeleton .leg.r { transform-origin: 0 0; }
+@keyframes skel-bounce { 0%, 100% { transform: translateY(0) rotate(-4deg); } 50% { transform: translateY(-14px) rotate(4deg); } }
+@keyframes skel-swing { from { transform: rotate(-18deg); } to { transform: rotate(18deg); } }
+@media (prefers-reduced-motion: reduce) { .hw-scene * { animation: none !important; } .bat { transform: translateX(30vw); } }
 #hw-btn[aria-pressed="true"] { background: #ffe0b8; border-color: #ff9a3a; opacity: 1; }
 
 /* ---------- picture code ------------------------------------------------------- */

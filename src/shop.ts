@@ -3,7 +3,7 @@
 // cat.ts / home.ts how to draw an item; the same builder draws many items.
 
 export type Category =
-  | "cats" | "hats" | "collars" | "glasses" | "backs" | "toys" | "food"
+  | "cats" | "hats" | "collars" | "glasses" | "backs" | "costumes" | "toys" | "food"
   | "beds" | "bowls" | "water" | "litter" | "walls" | "floors" | "rugs" | "decor";
 
 export type ShopItem = {
@@ -107,6 +107,14 @@ const BACKS = [
   item("backs", "backpack", "Explorer Backpack", 100, "🎒", "backpack", 0x2e86de, 0xf1c40f),
   item("backs", "shell", "Turtle Shell", 140, "🐢", "shell", 0x4c9a5a, 0x8a6a3a),
 ];
+// Costumes: a whole-body suit over the cat; mix with any hat.
+const COSTUMES = [
+  spooky(item("costumes", "pumpkin-suit", "Pumpkin Suit", 200, "🎃", "pumpkin", 0xff7a1a, 0x3f8a3a)),
+  spooky(item("costumes", "ghost-sheet", "Ghost Sheet", 180, "👻", "ghost", 0xffffff)),
+  spooky(item("costumes", "skeleton-suit", "Skeleton Suit", 220, "💀", "skeleton", 0x1e1e26, 0xf4f1e8)),
+  spooky(item("costumes", "bee-suit", "Bumblebee Suit", 200, "🐝", "bee", 0xf6c624, 0x1e1e26)),
+  spooky(item("costumes", "dino-suit", "Dino Suit", 240, "🦖", "dino", 0x5fb84a, 0xf6d34a)),
+];
 
 // ---------- toys and food --------------------------------------------------------
 // `style` picks the play animation: yarn (chase a rolling thing), feather, laser.
@@ -209,7 +217,7 @@ const DECOR = [
 ];
 
 export const CATALOG: ShopItem[] = [
-  ...CATS, ...HATS, ...COLLARS, ...GLASSES, ...BACKS, ...TOYS, ...FOOD,
+  ...CATS, ...HATS, ...COLLARS, ...GLASSES, ...BACKS, ...COSTUMES, ...TOYS, ...FOOD,
   ...BEDS, ...BOWLS, ...WATER, ...LITTER, ...WALLS, ...FLOORS, ...RUGS, ...DECOR,
 ];
 export const BY_ID: Record<string, ShopItem> = Object.fromEntries(CATALOG.map((i) => [i.id, i]));
@@ -218,8 +226,8 @@ export const BY_ID: Record<string, ShopItem> = Object.fromEntries(CATALOG.map((i
 export const STARTER = CATALOG.filter((i) => i.price === 0).map((i) => i.id);
 
 /** Wearable slot for each clothing category. */
-export const SLOT_OF: Partial<Record<Category, "hat" | "collar" | "glasses" | "back">> = {
-  hats: "hat", collars: "collar", glasses: "glasses", backs: "back",
+export const SLOT_OF: Partial<Record<Category, "hat" | "collar" | "glasses" | "back" | "costume">> = {
+  hats: "hat", collars: "collar", glasses: "glasses", backs: "back", costumes: "costume",
 };
 /** Home slot for each furniture category (decor is a list, not a slot). */
 export const HOME_SLOT_OF: Partial<Record<Category, "bed" | "food" | "water" | "litter" | "wall" | "floor" | "rug">> = {
@@ -233,6 +241,7 @@ export const SHOP_TABS: { cat: Category; label: string }[] = [
   { cat: "collars", label: "🎀 Collars" },
   { cat: "glasses", label: "👓 Glasses" },
   { cat: "backs", label: "🦸 Capes & Wings" },
+  { cat: "costumes", label: "🎭 Costumes" },
   { cat: "cats", label: "🐱 Cats" },
   { cat: "beds", label: "🛏️ Beds" },
   { cat: "bowls", label: "🥣 Food Bowls" },

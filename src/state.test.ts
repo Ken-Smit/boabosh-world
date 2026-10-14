@@ -106,6 +106,8 @@ test("wear toggles, refuses unowned items and things that aren't clothes", () =>
   assert.equal(activeCat(wear(wear(s, "acorn-hat"), "acorn-hat")).worn.hat, null);
   assert.equal(activeCat(wear(s, "goggles")).worn.hat, null); // not owned
   assert.deepEqual(wear(s, "yarn"), s); // toys are not worn
+  const suited = wear({ ...s, items: [...s.items, "ghost-sheet"] }, "ghost-sheet");
+  assert.equal(activeCat(suited).worn.costume, "ghost-sheet"); // costumes get their own slot
 });
 
 test("furnishing swaps owned furniture and toggles decor", () => {
