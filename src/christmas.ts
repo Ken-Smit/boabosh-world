@@ -317,6 +317,9 @@ function alongPath(a: THREE.Vector3, b: THREE.Vector3, along: number[]): Spot[] 
   }));
 }
 
+// ponytail: hand-listed [x, z, radius], re-measure if the map's pads or tree seed change.
+const MAP_CANE_BLOCKERS = [[-2.76, 0.38, 1.4], [2.4, 4.4, 1.3], [-4, 2.9, 0.55], [4, 2.9, 0.55]] as const; // pine, cottage, two signs
+
 const OUTSIDE: Layout["snow"] = { n: 350, box: [15, 13, 12], centre: [1, 0], size: 0.15 };
 const INSIDE: Layout["snow"] = { n: 70, box: [6, 5, 4], centre: [0, 0], size: 0.09 }; // a little magic indoor snow
 
@@ -346,9 +349,11 @@ function layout(place: Place, spots?: MapSpots): Layout {
       const s = spots!;
       return {
         trees: [[7.6, 3.4, 1.2], [-7.6, 2.0, 1.1], [-8.2, -2.4, 1.3], [8.3, -2.6, 1.25]],
-        snowmen: [[2.4, 1.3, 0.8, -0.2], [-2.3, 0.7, 0.8, 0.2], [6.0, 3.6, 0.8, -0.3]],
+        snowmen: [[2.4, 1.3, 0.8, -0.2], [-2.8, 3.1, 0.8, 0.2], [6.0, 3.6, 0.8, -0.3]],
         presents: [[6.7, 4.3, 0.8], [8.3, 4.4, 0.7], [-6.8, 2.8, 0.75], [3.5, 3.1, 0.8], [1.5, 3.2, 0.7]],
-        canes: s.pads.flatMap((p) => alongPath(s.home, p, [1.7, p.distanceTo(s.home) - 2.3])),
+        canes: s.pads.flatMap((p) => alongPath(s.home, p, [1.7, p.distanceTo(s.home) - 2.3])).filter(([x, z], i, all) =>
+          !MAP_CANE_BLOCKERS.some(([bx, bz, r]) => Math.hypot(x - bx, z - bz) < r) &&
+          !all.slice(0, i).some(([ox, oz]) => Math.hypot(x - ox, z - oz) < 0.5)), // paths share a start, so canes can land on each other
         arch: [0, -0.4, 2.6], // a gateway over the mountain path
         snow: { n: 600, box: [20, 12, 15], centre: [0, -1], size: 0.2 },
       };
