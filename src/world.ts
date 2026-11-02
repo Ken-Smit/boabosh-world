@@ -129,7 +129,7 @@ export function buildWorld(scene: THREE.Scene, spots: Spots): (t: number) => voi
     }
     geo.setAttribute("color", new THREE.Float32BufferAttribute(cols, 3));
     const sky = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.BackSide, fog: false }));
-    sky.name = "sky"; // the Halloween theme recolours it
+    sky.name = "sky"; // the seasonal themes recolour it
     scene.add(sky);
   }
 
@@ -655,6 +655,7 @@ export function buildWorld(scene: THREE.Scene, spots: Spots): (t: number) => voi
     for (let i = 0; i < 7; i++) {
       const m = mat(choose([0xffb347, 0xff6b9a, 0x7ec8ff, 0xfff176, 0xb39ddb]), { side: THREE.DoubleSide });
       const g = new THREE.Group();
+      g.name = "summery"; // no butterflies in the snow
       const l = new THREE.Mesh(wing, m), r = new THREE.Mesh(wing, m);
       r.rotation.y = Math.PI;
       g.add(l, r);

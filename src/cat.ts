@@ -318,6 +318,38 @@ const HAT: Record<string, Build> = {
     at(ring(0.21, 0.045, c2), 0, -0.12, 0),
     at(new THREE.Mesh(new THREE.SphereGeometry(0.08, 10, 8), mat(c2)), 0, 0.2, 0),
   ),
+  santa: (c1, c2) => {
+    const tip = new THREE.Mesh(new THREE.ConeGeometry(0.1, 0.24, 12), mat(c1));
+    tip.rotation.z = -1.2;
+    return grp(
+      at(new THREE.Mesh(new THREE.ConeGeometry(0.21, 0.3, 14), mat(c1)), 0, 0.02, 0),
+      at(tip, 0.09, 0.14, 0),
+      at(ring(0.21, 0.05, c2), 0, -0.12, 0),
+      at(new THREE.Mesh(new THREE.SphereGeometry(0.07, 10, 8), mat(c2)), 0.21, 0.1, 0),
+    );
+  },
+  elf: (c1, c2) => {
+    const g = grp(
+      at(new THREE.Mesh(new THREE.ConeGeometry(0.18, 0.46, 14), mat(c1)), 0, 0.12, 0),
+      at(ring(0.18, 0.035, c2), 0, -0.1, 0),
+      at(new THREE.Mesh(new THREE.SphereGeometry(0.045, 8, 6), mat(0xf1c40f)), 0, 0.37, 0),
+    );
+    g.rotation.z = -0.25;
+    return g;
+  },
+  antlers: (c1, c2) => {
+    const g = grp(at(ring(0.2, 0.02, c2), 0, -0.11, 0));
+    for (const s of [-1, 1]) {
+      const stick = (x: number, y: number, len: number, tilt: number) => {
+        const m = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.024, len, 6), mat(c1));
+        m.position.set(s * x, y, 0);
+        m.rotation.z = -s * tilt;
+        return m;
+      };
+      g.add(stick(0.17, 0.03, 0.3, 0.4), stick(0.25, 0.14, 0.14, 1.0), stick(0.15, 0.17, 0.14, -0.5));
+    }
+    return g;
+  },
   goggles: (c1) => {
     const g = grp(at(ring(0.27, 0.025, 0x5a3a1a, 24), 0, -0.13, -0.02));
     for (const x of [-0.12, 0.12]) {
@@ -665,6 +697,35 @@ const COSTUME: Record<string, Build> = {
     const wings = BACK.wings!(0xeaf6ff, 0xffffff);
     wings.position.set(0, 0.55, -0.4);
     return grp(g, wings);
+  },
+  santa: (c1, c2) => {
+    const g = grp(suit(c1), at(ring(0.425, 0.04, 0x23232b, 24), 0, 0.46, 0), at(ring(0.46, 0.05, c2, 24), 0, 0.3, 0));
+    g.children.slice(1).forEach((c) => (c.scale.x = 1.06));
+    g.add(at(new THREE.Mesh(new THREE.BoxGeometry(0.13, 0.1, 0.03), mat(0xf1c40f)), 0, 0.46, 0.45));
+    return g;
+  },
+  reindeer: (c1, c2) => {
+    const belly = new THREE.Mesh(new THREE.SphereGeometry(0.22, 14, 10), mat(c2));
+    belly.scale.set(1, 1.1, 0.3);
+    return grp(suit(c1), at(belly, 0, 0.5, 0.38), at(new THREE.Mesh(new THREE.SphereGeometry(0.07, 8, 6), mat(0xffffff)), 0, 0.42, -0.44));
+  },
+  elf: (c1, c2) => {
+    const g = grp(suit(c1), at(ring(0.425, 0.035, 0x23232b, 24), 0, 0.42, 0));
+    g.children[1]!.scale.x = 1.06;
+    g.add(at(new THREE.Mesh(new THREE.BoxGeometry(0.11, 0.09, 0.03), mat(0xf1c40f)), 0, 0.42, 0.45));
+    for (let i = 0; i < 12; i++) { // a pointy collar
+      const a = (i / 12) * Math.PI * 2;
+      const point = new THREE.Mesh(new THREE.ConeGeometry(0.06, 0.13, 5), mat(c2));
+      point.rotation.x = Math.PI;
+      g.add(at(point, Math.sin(a) * 0.43, 0.68, Math.cos(a) * 0.41));
+    }
+    return g;
+  },
+  snowman: (c1, c2) => {
+    const g = grp(suit(c1, 0.5), at(ring(0.41, 0.05, c2, 24), 0, 0.7, 0));
+    g.children[1]!.scale.x = 1.06;
+    for (const y of [0.42, 0.55]) g.add(at(new THREE.Mesh(new THREE.SphereGeometry(0.035, 8, 6), mat(0x23232b)), 0, y, 0.45));
+    return g;
   },
   dino: (c1, c2) => {
     const g = grp(suit(c1));

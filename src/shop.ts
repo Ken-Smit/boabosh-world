@@ -18,12 +18,13 @@ export type ShopItem = {
   /** Food: how many servings it adds. */
   amount?: number;
   /** Shown in a seasonal shop tab (still owned and usable all year). */
-  season?: "halloween";
+  season?: "halloween" | "christmas";
 };
 
 const item = (cat: Category, id: string, label: string, price: number, icon: string, style?: string, color?: number, color2?: number, amount?: number): ShopItem =>
   ({ id, cat, label, price, icon, style, color, color2, amount });
 const spooky = (i: ShopItem): ShopItem => ({ ...i, season: "halloween" });
+const jolly = (i: ShopItem): ShopItem => ({ ...i, season: "christmas" });
 
 // ---------- cats -------------------------------------------------------------
 // Coat colours for makeCat. Names are a preset list on purpose: no free-text
@@ -71,7 +72,9 @@ const HATS = [
   item("hats", "headphones", "Headphones", 140, "🎧", "phones", 0x333a44, 0xff6b6b),
   item("hats", "propeller", "Propeller Cap", 110, "🚁", "propeller", 0xe74c3c, 0xf1c40f),
   item("hats", "bunny-ears", "Bunny Ears", 90, "🐰", "bunny", 0xffffff, 0xffc0d0),
-  item("hats", "santa-hat", "Holiday Hat", 100, "🎅", "bobble", 0xd62828, 0xffffff),
+  jolly(item("hats", "santa-hat", "Santa Hat", 100, "🎅", "santa", 0xd62828, 0xffffff)),
+  jolly(item("hats", "elf-hat", "Elf Hat", 90, "🧝", "elf", 0x2f8a4a, 0xd62839)),
+  jolly(item("hats", "antlers", "Reindeer Antlers", 110, "🦌", "antlers", 0x8a5a2b, 0xd62839)),
 ];
 const COLLARS = [
   item("collars", "leaf-collar", "Leaf Collar", 60, "🍃", "band", 0x4c9a5a),
@@ -88,6 +91,8 @@ const COLLARS = [
   item("collars", "pearls", "Pearl Necklace", 150, "📿", "pearls", 0xfaf6ee),
   spooky(item("collars", "spooky-collar", "Candy Corn Collar", 50, "🍬", "band", 0xff9a3a, 0xffe066)),
   spooky(item("collars", "bat-bowtie", "Bat Bow Tie", 60, "🦇", "bowtie", 0x2a2233)),
+  jolly(item("collars", "jingle-collar", "Jingle Bell Collar", 60, "🔔", "bell", 0xd62839, 0xf1c40f)),
+  jolly(item("collars", "holly-scarf", "Holly Scarf", 80, "🧣", "scarf", 0x2f8a4a, 0xd62839)),
 ];
 const GLASSES = [
   item("glasses", "round-glasses", "Round Glasses", 50, "👓", "round", 0x5a3a1a),
@@ -104,6 +109,7 @@ const BACKS = [
   item("backs", "butterfly-wings", "Butterfly Wings", 200, "🦋", "wings", 0x7ec8ff, 0xff9ff3),
   spooky(item("backs", "bat-wings", "Bat Wings", 180, "🦇", "batwings", 0x3a2a4a)),
   spooky(item("backs", "vampire-cape", "Vampire Cape", 140, "🧛", "cape", 0x1a1a22, 0xc0392b)),
+  jolly(item("backs", "santa-cape", "Santa Cape", 140, "🎅", "cape", 0xd62828, 0xffffff)),
   item("backs", "backpack", "Explorer Backpack", 100, "🎒", "backpack", 0x2e86de, 0xf1c40f),
   item("backs", "shell", "Turtle Shell", 140, "🐢", "shell", 0x4c9a5a, 0x8a6a3a),
 ];
@@ -114,6 +120,10 @@ const COSTUMES = [
   spooky(item("costumes", "skeleton-suit", "Skeleton Suit", 220, "💀", "skeleton", 0x1e1e26, 0xf4f1e8)),
   spooky(item("costumes", "bee-suit", "Bumblebee Suit", 200, "🐝", "bee", 0xf6c624, 0x1e1e26)),
   spooky(item("costumes", "dino-suit", "Dino Suit", 240, "🦖", "dino", 0x5fb84a, 0xf6d34a)),
+  jolly(item("costumes", "santa-suit", "Santa Suit", 240, "🎅", "santa", 0xd62828, 0xffffff)),
+  jolly(item("costumes", "reindeer-suit", "Reindeer Suit", 220, "🦌", "reindeer", 0x9a6a3a, 0xf3e2c3)),
+  jolly(item("costumes", "elf-suit", "Elf Suit", 200, "🧝", "elf", 0x2f8a4a, 0xd62839)),
+  jolly(item("costumes", "snowman-suit", "Snowman Suit", 200, "⛄", "snowman", 0xffffff, 0xd62839)),
 ];
 
 // ---------- toys and food --------------------------------------------------------
@@ -130,6 +140,9 @@ const TOYS = [
   item("toys", "green-laser", "Green Laser", 120, "🟢", "laser", 0x20ff60),
   spooky(item("toys", "pumpkin-ball", "Pumpkin Ball", 60, "🎃", "ball", 0xff7a1a, 0x3f8a3a)),
   spooky(item("toys", "ghost-wand", "Ghost Wand", 90, "👻", "feather", 0xffffff)),
+  jolly(item("toys", "snowball", "Bouncy Snowball", 60, "❄️", "ball", 0xffffff, 0xbfe0f5)),
+  jolly(item("toys", "candy-wand", "Candy Cane Wand", 90, "🍭", "feather", 0xd62839)),
+  jolly(item("toys", "gingerbread-mouse", "Gingerbread Mouse", 70, "🍪", "mouse", 0xb5763a, 0xffffff)),
 ];
 const FOOD = [
   item("food", "fish-3", "Fish Snack ×3", 15, "🐟", undefined, undefined, undefined, 3),
@@ -148,6 +161,7 @@ const BEDS = [
   item("beds", "bed-canopy", "Princess Canopy", 260, "👸", "canopy", 0xff9ff3, 0xffffff),
   item("beds", "bed-castle", "Castle Bed", 320, "🏰", "castle", 0xb8c4cf, 0x6c5ce7),
   spooky(item("beds", "bed-pumpkin", "Pumpkin Bed", 120, "🎃", "donut", 0xff7a1a, 0xffe0b0)),
+  jolly(item("beds", "bed-candy", "Candy Cane Bed", 120, "🍬", "donut", 0xd62839, 0xfff5f5)),
 ];
 const BOWLS = [
   item("bowls", "bowl-blue", "Blue Bowl", 0, "🥣", "bowl", 0x3d7cc9),
@@ -156,6 +170,7 @@ const BOWLS = [
   item("bowls", "bowl-fish", "Fish Bowl", 70, "🐠", "fish", 0xff9f43),
   item("bowls", "bowl-stand", "Wooden Stand", 90, "🪵", "stand", 0xa0703a, 0xffffff),
   spooky(item("bowls", "bowl-cauldron", "Cauldron Bowl", 70, "🧪", "bowl", 0x2b2b33)),
+  jolly(item("bowls", "bowl-holly", "Holly Bowl", 70, "🍃", "bowl", 0x2f8a4a)),
 ];
 const WATER = [
   item("water", "water-basic", "Water Bowl", 0, "💧", "bowl", 0x5ec8ff),
@@ -179,6 +194,8 @@ const WALLS = [
   item("walls", "wall-sunset", "Sunset", 90, "🌅", "gradient", 0xffb38a, 0xffe6a8),
   item("walls", "wall-fish", "Fish Pattern", 100, "🐟", "fish", 0xdff1ff, 0x5ec8ff),
   spooky(item("walls", "wall-spooky", "Spooky Night", 80, "🌙", "stars", 0x2e1f4a, 0xff9a3a)),
+  jolly(item("walls", "wall-candy", "Candy Stripes", 80, "🍬", "stripes", 0xfff5f5, 0xe8606e)),
+  jolly(item("walls", "wall-snowy", "Snowy Night", 80, "❄️", "dots", 0x2e4a7a, 0xffffff)),
 ];
 const FLOORS = [
   item("floors", "floor-wood", "Wood Floor", 0, "🟫", "planks", 0xb07a4a, 0x9a6a3e),
@@ -194,6 +211,7 @@ const RUGS = [
   item("rugs", "rug-rainbow", "Rainbow Rug", 90, "🌈", "rainbow"),
   item("rugs", "rug-paw", "Paw Print Rug", 70, "🐾", "paw", 0x9b59b6, 0xffffff),
   item("rugs", "rug-fish", "Fish Rug", 70, "🐟", "fishrug", 0x4f86c6, 0xffffff),
+  jolly(item("rugs", "rug-holly", "Holly Rug", 70, "🎄", "round", 0xd62839, 0x2f8a4a)),
 ];
 // Decor: each has a fixed spot in the room and is switched on or off.
 const DECOR = [
@@ -214,6 +232,10 @@ const DECOR = [
   spooky(item("decor", "jack-o-lantern", "Giant Jack-o'-Lantern", 80, "🎃", "jackolantern")),
   spooky(item("decor", "cauldron", "Bubbling Cauldron", 100, "🧪", "cauldron")),
   spooky(item("decor", "bat-garland", "Bat Garland", 60, "🦇", "batgarland")),
+  jolly(item("decor", "christmas-tree", "Christmas Tree", 150, "🎄", "christmastree")),
+  jolly(item("decor", "stockings", "Stockings", 60, "🧦", "stockings")),
+  jolly(item("decor", "snowman-friend", "Snowman Friend", 90, "⛄", "snowman")),
+  jolly(item("decor", "gift-pile", "Pile of Presents", 80, "🎁", "gifts")),
 ];
 
 export const CATALOG: ShopItem[] = [

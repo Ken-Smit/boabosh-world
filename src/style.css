@@ -381,6 +381,34 @@ body.halloween #title { background: linear-gradient(90deg, rgba(40, 10, 60, .6),
 @media (prefers-reduced-motion: reduce) { .hw-scene * { animation: none !important; } .bat { transform: translateX(30vw); } }
 #hw-btn[aria-pressed="true"] { background: #ffe0b8; border-color: #ff9a3a; opacity: 1; }
 
+#hw-btn[hidden] { display: none; }
+
+/* ---------- Christmas theme (body.christmas) ------------------------------- */
+.xmas-only { display: none; }
+body.christmas .xmas-only { display: block; }
+#title-xmas { font-size: 1.4rem; font-weight: 800; color: #fff; margin: 0 0 6px; text-shadow: 0 2px 8px rgba(120, 10, 30, .8); }
+body.christmas {
+  --accent: #d62839;
+  --accent-dark: #9c1626;
+  --line: #bcd3e2;
+}
+body.christmas .pill:not(.ghost) { background: linear-gradient(#e8485a, #d62839); }
+body.christmas .panel h2 { color: #1f7a3f; }
+/* Frosty grade: cool blue at the top, a soft icy edge. */
+body.christmas #grade::before { background: linear-gradient(to bottom, rgba(150, 200, 255, .2), transparent 45%); mix-blend-mode: normal; }
+body.christmas #grade::after { background: radial-gradient(130% 100% at 50% 45%, transparent 60%, rgba(220, 240, 255, .35)); }
+body.christmas #title { background: linear-gradient(90deg, rgba(20, 70, 50, .62), rgba(150, 25, 45, .18) 55%, transparent), url("/boabosh.jpg") center / cover no-repeat; }
+/* Title screen: snow drifting down, friends in the corner. */
+.xmas-scene { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.flake { position: absolute; top: 0; left: var(--x); opacity: .9; animation: flake-fall var(--t) linear var(--d) infinite; }
+.flake::before { content: "❄"; display: block; color: #fff; font-size: clamp(1rem, 2.6vw, 1.7rem); text-shadow: 0 0 6px rgba(160, 210, 255, .9); }
+@keyframes flake-fall {
+  0% { transform: translate(0, -8vh) rotate(0); } 50% { transform: translate(3vw, 50vh) rotate(180deg); } 100% { transform: translate(-1vw, 108vh) rotate(360deg); }
+}
+.xmas-pals { position: absolute; bottom: 3vh; right: 6vw; font-size: clamp(3rem, 10vw, 6rem); line-height: 1; animation: skel-bounce 2.4s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .xmas-scene * { animation: none !important; } .flake { top: var(--x); } }
+body.christmas #hw-btn[aria-pressed="true"] { background: #dff3e4; border-color: #2f8a4a; opacity: 1; }
+
 /* ---------- picture code ------------------------------------------------------- */
 .pic-code { list-style: none; display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 0; margin: 10px auto; max-width: 360px; counter-reset: pic; }
 .pic-code li {
@@ -478,3 +506,145 @@ input { font-size: 16px; } /* below 16px iPhone zooms in when you tap a text box
   #care { top: calc(var(--hud-h, 50px) + 6px); }
   .panel { inset: calc(var(--hud-h, 50px) + 6px) 8px 8px auto !important; }
 }
+
+/* Game Garden games at Christmas (the art itself is in games.ts) */
+body.christmas .chess { border: 6px solid transparent; border-radius: 0; border-image: repeating-linear-gradient(45deg, #d62839 0 10px, #fff 10px 20px) 6; }
+body.christmas .chess .light { background: #f4fbff; }
+body.christmas .chess .dark { background: #3f9a5c; }
+body.christmas .chess .dot::after { background: rgba(255, 210, 63, .95); box-shadow: 0 0 0 2px #8a6a00; }
+body.christmas .chess .picked { box-shadow: inset 0 0 0 4px #ffd23f, inset 0 0 0 100px rgba(255, 210, 63, .3); }
+body.christmas .ttt .cell { background: #f4fbff; }
+body.christmas .ttt .cell:nth-child(odd) { border-color: #d62839; }
+body.christmas .ttt .cell:nth-child(even) { border-color: #2f8a4a; }
+body.christmas .ttt .cell.glow { background: #fff1b8; border-color: #f1c40f; }
+body.christmas .rps-btn { background: #f4fbff; border-color: #2f8a4a; }
+body.christmas .rps-hand.coach svg { filter: hue-rotate(130deg); } /* the other player's mittens are green */
+
+/* ---------- Laser Tag ---------- */
+body.lasertag #hud > :not(#snd, #mus), body.lasertag #hint { display: none; }
+body.lasertag #grade { display: none; } /* the warm sunlight doesn't reach indoors */
+#lt-hud { position: fixed; inset: 0; z-index: 10; pointer-events: none; user-select: none; -webkit-user-select: none; }
+#lt-hud[hidden] { display: none; }
+#lt-hud > * { pointer-events: auto; }
+#lt-score {
+  position: absolute; top: max(8px, env(safe-area-inset-top)); left: 50%; transform: translateX(-50%);
+  gap: 16px; font-size: 1.25rem; white-space: nowrap; pointer-events: none;
+}
+#lt-back { position: absolute; top: max(8px, env(safe-area-inset-top)); right: max(8px, env(safe-area-inset-right)); }
+#lt-say {
+  position: absolute; top: 18%; left: 16px; right: 16px; margin: 0; text-align: center; pointer-events: none;
+  color: #fff; font-size: clamp(1.3rem, 5vw, 2.6rem); font-weight: 800; text-shadow: 0 2px 10px #2438d8, 0 0 4px #000;
+}
+#lt-stick {
+  position: absolute; left: max(18px, env(safe-area-inset-left)); bottom: max(18px, env(safe-area-inset-bottom));
+  width: clamp(120px, 26vmin, 170px); aspect-ratio: 1; border-radius: 50%;
+  display: grid; place-items: center; touch-action: none; cursor: grab;
+  background: #4fc3ff33; border: 3px solid #9fe8ffaa;
+}
+#lt-stick i { width: 44%; aspect-ratio: 1; border-radius: 50%; background: #9fe8ff; box-shadow: 0 0 14px #4fc3ff; pointer-events: none; }
+#lt-fire {
+  position: absolute; right: max(18px, env(safe-area-inset-right)); bottom: max(18px, env(safe-area-inset-bottom));
+  width: clamp(110px, 24vmin, 160px); aspect-ratio: 1; border-radius: 50%;
+  display: grid; place-items: center; touch-action: none; cursor: pointer;
+  background: #2f8fe0; color: #fff; font-size: clamp(1.4rem, 5vmin, 2rem); font-weight: 800;
+  border: 4px solid #cfeeff; box-shadow: 0 4px 0 #0005;
+}
+#lt-fire:active { transform: translateY(2px); }
+#lt-fire.locked { background: #ffb02e; border-color: #fff; box-shadow: 0 0 22px #ffe066; }
+
+/* ---------- Fish Catch ------------------------------------------------------ */
+.fc {
+  position: relative; width: 100%; height: clamp(200px, calc(85dvh - 205px), 480px); margin: 4px 0 10px;
+  overflow: hidden; border-radius: 16px; border: 3px solid var(--line); cursor: ew-resize;
+  touch-action: none; user-select: none; -webkit-user-select: none;
+}
+.fc:focus { outline: none; }
+.fc:focus-visible { outline: 3px solid var(--accent); }
+.fc-sunny { background: linear-gradient(#6cc5f5, #d9f3ff); }
+.fc-jolly { background: linear-gradient(#10224a, #2c4a80 75%, #4b6fa8); }
+.fc-sky, .fc-ground, .fc-lights { position: absolute; left: 0; right: 0; pointer-events: none; }
+.fc-sky { inset: 0; }
+.fc-ground { bottom: -6%; height: 16%; border-radius: 50% 50% 0 0 / 60% 60% 0 0; left: -10%; right: -10%; }
+.fc-sunny .fc-ground { background: #7cc457; }
+.fc-jolly .fc-ground { background: #f1f8ff; }
+.fc-sun { position: absolute; left: 50%; top: 6%; width: 13%; aspect-ratio: 1; margin-left: -6%; border-radius: 50%; background: #ffe066; box-shadow: 0 0 30px #ffd23f; }
+.fc-cloud { position: absolute; left: 12%; top: 30%; width: 22%; height: 7%; border-radius: 999px; background: #fff; opacity: .85; }
+.fc-cloud.two { left: 68%; top: 46%; width: 18%; }
+.fc-flake { position: absolute; top: 0; left: var(--x); height: 100%; width: 0; animation: fc-snow var(--t) linear var(--d) infinite; }
+.fc-flake b { position: absolute; top: 0; left: 0; width: 7px; height: 7px; border-radius: 50%; background: #fff; opacity: .85; }
+@keyframes fc-snow { from { transform: translate(0, -5%); } to { transform: translate(14px, 100%); } }
+.fc-lights { top: 0; }
+.fc-lights svg { display: block; width: 100%; height: auto; }
+.fc-bulb { animation: fc-twinkle 1.6s ease-in-out var(--d) infinite; }
+@keyframes fc-twinkle { 50% { opacity: .7; } }
+.fc-thing, .fc-basket { position: absolute; top: 0; left: 0; pointer-events: none; }
+.fc-thing { width: var(--item); height: var(--item); will-change: transform; }
+.fc-thing svg, .fc-basket svg { display: block; width: 100%; height: 100%; }
+.fc-jolly .fc-thing svg { filter: drop-shadow(0 0 3px rgba(255, 255, 255, .55)); }
+.fc-thing.gold svg { filter: drop-shadow(0 0 8px #ffe680); }
+.fc-basket { top: auto; bottom: 2%; width: var(--bw); height: var(--bh); will-change: transform; }
+.fc-basket.wobble svg { animation: fc-wobble .25s ease-in-out infinite; }
+@keyframes fc-wobble { 25% { transform: rotate(-9deg); } 75% { transform: rotate(9deg); } }
+.fc-hud { position: absolute; top: 6px; left: 8px; right: 8px; display: flex; justify-content: space-between; pointer-events: none; }
+.fc-score, .fc-clock {
+  font-size: clamp(1.3rem, min(6dvh, 7vw), 2.3rem); font-weight: 900; line-height: 1.1; color: #33291f;
+  background: rgba(255, 253, 248, .94); border: 3px solid var(--line); border-radius: 999px; padding: 2px 14px;
+  font-variant-numeric: tabular-nums;
+}
+.fc-score.won { background: #fff1b8; border-color: #f1c40f; }
+.fc-banner, .fc-pop { position: absolute; pointer-events: none; font-weight: 900; }
+.fc-banner {
+  left: 50%; top: 42%; transform: translate(-50%, -50%); width: max-content; max-width: 88%; text-align: center;
+  font-size: clamp(1.1rem, 4dvh, 1.6rem); color: #33291f; background: rgba(255, 253, 248, .94); border-radius: 16px; padding: 8px 16px;
+}
+.fc-pop {
+  transform: translate(-50%, -50%); font-size: clamp(1.5rem, 6dvh, 2.3rem); color: #fff; animation: fc-rise .8s ease-out both;
+  text-shadow: 0 2px 0 #1f7a3f, 0 0 8px #1f7a3f; white-space: nowrap;
+}
+.fc-pop.gold { color: #ffe680; text-shadow: 0 2px 0 #a86a00, 0 0 8px #a86a00; }
+.fc-pop.bad { color: #fff; text-shadow: 0 2px 0 #7a3a2a, 0 0 8px #7a3a2a; }
+.fc-pop.goal { animation-duration: 1.8s; font-size: clamp(1.3rem, 5dvh, 2rem); color: #33291f; text-shadow: none; background: #fff1b8; border: 3px solid #f1c40f; border-radius: 16px; padding: 6px 14px; }
+@keyframes fc-rise { from { translate: 0 8px; opacity: 1; } 70% { opacity: 1; } to { translate: 0 -34px; opacity: 0; } }
+.fc-end {
+  position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+  padding: 12px; text-align: center; color: #33291f; background: rgba(255, 253, 248, .86); font-weight: 800;
+}
+.fc-end strong { font-size: clamp(2.2rem, 10dvh, 4rem); line-height: 1.1; }
+.fc-end span { font-size: clamp(1.05rem, 3.4dvh, 1.4rem); }
+.fc-end small { font-size: 1rem; opacity: .8; }
+@media (max-height: 500px) and (orientation: landscape) { /* Back moves up beside the title so the board gets the height */
+  .fc { height: calc(100dvh - 175px); min-height: 150px; margin: 2px 0 0; }
+  #game:has(.fc) #game-back { position: absolute; top: 6px; right: 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fc-flake { animation: none; transform: translateY(var(--y)); }
+  .fc-bulb, .fc-basket.wobble svg { animation: none; }
+  .fc-pop { animation: none; }
+}
+
+/* ---------- Yarn Roll ---------- */
+body.yarnroll #hud > :not(#snd, #mus), body.yarnroll #hint { display: none; }
+body.yarnroll #scene { touch-action: none; cursor: grab; } /* dragging the ball must never scroll the page */
+#yr-hud { position: fixed; inset: 0; z-index: 10; pointer-events: none; user-select: none; -webkit-user-select: none; }
+#yr-hud[hidden] { display: none; }
+#yr-score {
+  position: absolute; top: max(8px, env(safe-area-inset-top)); left: 50%; transform: translateX(-50%);
+  gap: 14px; font-size: 1.15rem; white-space: nowrap;
+}
+#yr-back { position: absolute; top: max(8px, env(safe-area-inset-top)); right: max(8px, env(safe-area-inset-right)); pointer-events: auto; }
+#yr-say {
+  position: absolute; top: 76px; left: 50%; transform: translateX(-50%); margin: 0; width: max-content; max-width: calc(100vw - 32px);
+  padding: 6px 16px; border-radius: 16px; text-align: center; color: #fff; background: #1d2c50cc;
+  font-size: clamp(1.05rem, 3.6vmin, 1.6rem); font-weight: 800;
+}
+#yr-say:empty { display: none; }
+#yr-power {
+  position: absolute; left: 50%; bottom: max(14px, env(safe-area-inset-bottom)); transform: translateX(-50%);
+  width: min(60vw, 280px); height: 18px; border-radius: 10px; overflow: hidden; visibility: hidden;
+  background: #ffffffcc; border: 3px solid #1d2c50cc;
+}
+#yr-power.on { visibility: visible; }
+#yr-power i { display: block; height: 100%; width: 0; }
+#yr-keys { display: none; position: absolute; left: 12px; bottom: 8px; margin: 0; color: #1d2c50; background: #ffffffb0; padding: 2px 10px; border-radius: 10px; font-size: .85rem; }
+@media (hover: hover) and (pointer: fine) and (min-width: 800px) { #yr-keys { display: block; } }
+@media (max-width: 480px) { #yr-score { top: 56px; font-size: 1rem; } #yr-say { top: 102px; } } /* below the buttons */

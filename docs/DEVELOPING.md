@@ -68,17 +68,24 @@ npm test          # node --test, no framework
 ```
 
 Covers coins, unlocks, buying, cats, outfits, furnishing, care needs, the litter
-chore reward, v1→v2 save migration, save-merge and code generation.
+chore reward, v1→v2 save migration, save-merge, code generation and the seasonal
+theme dates.
 
 ## Layout
 
 | File | What |
 | --- | --- |
 | `src/state.ts` | Pure game rules: coins, shop buys, cats, outfits, home, care needs, save migration. No DOM, no network — this is what the tests import. |
-| `src/shop.ts` | The shop catalog (116 items): cats, clothes, toys, food, furniture, decor. |
+| `src/shop.ts` | The shop catalog (154 items): cats, clothes, toys, food, furniture, decor. |
 | `src/games.ts` | Game Garden scene + Kitten Chess, Kitten Tic-Tac-Toe, Paw Rock-Paper-Scissors boards. |
 | `src/chess.ts` | Chess rules + a gentle 2-ply opponent (tested). |
 | `src/minigames.ts` | Tic-tac-toe + rock-paper-scissors rules (tested). |
+| `src/lasertag.ts` | Laser tag rules (tested, including simulated kids): the `LEVELS` difficulty table to tune, foe brains, aim assist, hit tests, scoring. No DOM or three.js. |
+| `src/lasertagScene.ts` | Laser Tag, opened from the Game Garden: neon room, beams and sparkles, keyboard and touch controls, HUD. |
+| `src/fishcatch.ts` | Fish Catch rules (tested, including simulated kids): the `CFG` table to tune, spawning, catching, scoring. No DOM. |
+| `src/fishcatchGame.ts` | Fish Catch / Stocking Catch board in the game panel: art, pointer and arrow keys, a loop that stops itself when the panel hides. |
+| `src/yarnroll.ts` | Yarn Roll rules (tested, including simulated kids): the `CONFIG` table to tune, lane physics, chain knocks, drag-to-aim, scoring. No DOM or three.js. |
+| `src/yarnrollScene.ts` | Yarn Roll, opened from the Game Garden (Snowball Roll at Christmas): lane, mice or snowmen and presents, aim arrow, drag and keyboard controls, HUD. |
 | `src/home.ts` | The cats' home: room, customizable furniture, care props (water level, litter clumps), other cats. |
 | `src/store.ts` | localStorage + Supabase sync, attempt logging. |
 | `src/quiz.ts` | Question engine: picks grade level, avoids repeats, shuffles choices. Area/boss data. |
@@ -89,6 +96,8 @@ chore reward, v1→v2 save migration, save-merge and code generation.
 | `public/boabosh.jpg` | Boabosh's portrait: title screen and HUD avatar (`boabosh-face.jpg`). |
 | `src/sound.ts` | All audio, synthesized with Web Audio (no files): purr, meows, quiz sounds, ambience per place, music box. |
 | `src/play.ts` | Toy play, petting, quiz reactions (hop, head tilt, victory spin + confetti). |
+| `src/season.ts` | Which theme belongs to a date, and whether a saved toggle counts (pure, tested). Only one theme ever runs. |
+| `src/christmas.ts` | Christmas theme: on Nov 1 through Jan 6 (🎄 toggle), snow, trees, snowmen, presents, candy canes, "Ho ho ho!" taps. |
 | `src/halloween.ts` | Halloween theme: on in October (🎃 toggle), pumpkins, ghosts, bats, sunset sky, "Boo!" taps. |
 | `src/world.ts` | Terrain, sky, paths, area scenery, home, pond, clouds, butterflies. |
 | `src/main.ts` | Scene, map, clicking, panels. |

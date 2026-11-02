@@ -99,6 +99,24 @@
   <button id="game-back" class="pill ghost">Back to games</button>
 </section>
 
+<!-- Laser Tag: during a round -->
+<div id="lt-hud" hidden>
+  <div id="lt-score" class="stat"><span>🔵 <strong id="lt-blue">0</strong></span><span><span id="lt-foe-dot">🩷</span> <strong id="lt-pink">0</strong></span><span>⏱️ <strong id="lt-time">60</strong></span></div>
+  <button id="lt-back" class="pill ghost" aria-label="Stop playing">✋<span class="lbl"> Stop</span></button>
+  <p id="lt-say" aria-live="polite"></p>
+  <div id="lt-stick" role="application" aria-label="Move stick"><i></i></div>
+  <div id="lt-fire" role="button" aria-label="Tag">TAG!</div>
+</div>
+
+<!-- Yarn Roll: during a game. Dragging happens on the canvas itself. -->
+<div id="yr-hud" hidden>
+  <div id="yr-score" class="stat"><span><span id="yr-icon">🐭</span> <strong id="yr-got">0</strong> / <strong id="yr-goal">0</strong></span><span id="yr-left"></span></div>
+  <button id="yr-back" class="pill ghost" aria-label="Stop playing">✋<span class="lbl"> Stop</span></button>
+  <p id="yr-say" aria-live="polite"></p>
+  <div id="yr-power" aria-hidden="true"><i></i></div>
+  <p id="yr-keys">← → aim · ↑ ↓ power · Space rolls</p>
+</div>
+
 <!-- Care: only at home -->
 <aside id="care" hidden>
   <h2><span id="care-name">Boabosh</span>'s needs</h2>
@@ -176,8 +194,23 @@
     <svg class="skeleton" style="--d:0s"><use href="#skel" /></svg>
     <svg class="skeleton" style="--d:-.45s"><use href="#skel" /></svg>
   </div>
+  <!-- Christmas: gentle snow falling, and a snowman and tree in the corner -->
+  <div class="xmas-only xmas-scene" aria-hidden="true">
+    <span class="flake" style="--x:6%;--t:9s;--d:0s"></span>
+    <span class="flake" style="--x:16%;--t:12s;--d:-5s"></span>
+    <span class="flake" style="--x:27%;--t:10s;--d:-2s"></span>
+    <span class="flake" style="--x:38%;--t:14s;--d:-8s"></span>
+    <span class="flake" style="--x:49%;--t:11s;--d:-4s"></span>
+    <span class="flake" style="--x:58%;--t:13s;--d:-10s"></span>
+    <span class="flake" style="--x:68%;--t:9s;--d:-6s"></span>
+    <span class="flake" style="--x:77%;--t:12s;--d:-1s"></span>
+    <span class="flake" style="--x:86%;--t:10s;--d:-7s"></span>
+    <span class="flake" style="--x:95%;--t:14s;--d:-3s"></span>
+    <span class="xmas-pals">🎄⛄</span>
+  </div>
   <div class="title-card">
     <p id="title-hw" class="hw-only">🎃 Happy Halloween! 🦇</p>
+    <p id="title-xmas" class="xmas-only">🎄 Merry Christmas! ⛄</p>
     <h1>Boabosh's World</h1>
     <p>Explore the forest, the mountain and the lab with Boabosh. Answer questions, earn fish, find toys.</p>
     <button id="start" class="pill">Start the adventure</button>

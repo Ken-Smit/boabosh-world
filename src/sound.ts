@@ -301,6 +301,114 @@ let spooky = false;
 export const setSpooky = (v: boolean) => { spooky = v; };
 const toMinor = (n: number) => ([4, 9, 11].includes(n % 12) ? n - 1 : n); // E→E♭, A→A♭, B→B♭: C major becomes C minor
 
+// ---------- Christmas -----------------------------------------------------------------
+
+/** Sleigh bells: a quick shake of tiny high bells. */
+export function jingle(vol = 1, bus: Bus = "sfx") {
+  if (!ready()) return;
+  const t = ctx!.currentTime;
+  for (let i = 0; i < 6; i++) bell(2300 + (i % 3) * 520, t + i * 0.07, 0.3, 0.09 * vol, bus);
+}
+
+/** A jolly "ho ho ho": three deep bouncy notes, then a jingle. */
+export function hoHoHo() {
+  if (!ready()) return;
+  const t = ctx!.currentTime;
+  for (let i = 0; i < 3; i++) {
+    tone(185, t + i * 0.26, 0.22, 0.3, "triangle", 135);
+    tone(370, t + i * 0.26, 0.16, 0.08, "sine", 270);
+  }
+  setTimeout(() => jingle(0.7), 750);
+}
+
+let jolly = false;
+/** Christmas music: Jingle Bells on the music box, with sleigh bells on the beat. */
+export const setJolly = (v: boolean) => { jolly = v; };
+
+// ---------- Laser Tag Arena ------------------------------------------------------
+
+/** A toy "pew": a soft falling blip. The pink team's is lower and quieter. */
+export function pew(foe = false) {
+  if (!ready()) return;
+  const t = ctx!.currentTime;
+  if (foe) tone(760, t, 0.2, 0.07, "sine", 380);
+  else tone(1500, t, 0.16, 0.1, "triangle", 520);
+}
+
+/** A foe is winding up: a rising "wooOOp" you learn to step away from. */
+export function charge() {
+  if (!ready()) return;
+  tone(360, ctx!.currentTime, 0.45, 0.05, "sine", 760);
+}
+
+/** Somebody got tagged: a silly boop and a twinkle (the meow comes separately). */
+export function tagged() {
+  if (!ready()) return;
+  const t = ctx!.currentTime;
+  tone(520, t, 0.14, 0.12, "sine", 1040);
+  for (let i = 0; i < 4; i++) bell(midi(88 + i * 3), t + 0.04 + i * 0.05, 0.3, 0.05);
+}
+
+/** Blue team wins: a quick happy run up, then the fanfare. */
+export function tagWin() {
+  if (!ready()) return;
+  const t = ctx!.currentTime;
+  [72, 76, 79, 84].forEach((n, i) => bell(midi(n), t + i * 0.08, 0.5, 0.14));
+  setTimeout(fanfare, 350);
+}
+
+/** A loss is a warm "aww, nearly!": down a little, then back up. Never sad. */
+export function tagLose() {
+  if (!ready()) return;
+  const t = ctx!.currentTime;
+  [76, 74, 76, 79].forEach((n, i) => bell(midi(n), t + i * 0.2, 0.8, 0.13));
+}
+
+// ---------- Fish Catch ----------------------------------------------------------
+
+/** Something landed in the basket: a round little plop and a tiny bell. */
+export function plop() {
+  if (!ready()) return;
+  const t = ctx!.currentTime;
+  tone(300, t, 0.12, 0.2, "sine", 720);
+  bell(midi(84), t + 0.06, 0.25, 0.06);
+}
+
+// ---------- Yarn Roll ------------------------------------------------------------
+
+/** Off it goes: a soft rumble down the lane, longer and brighter with more power. */
+export function yarnRoll(power: number) {
+  if (!ready()) return;
+  const t = ctx!.currentTime, dur = 0.7 + power * 0.5;
+  hiss(t, dur, 0.14 + power * 0.1, "lowpass", 260 + power * 260, 1.5, 140);
+  tone(95, t, dur * 0.7, 0.1, "sine", 60);
+}
+
+/** A mouse goes over: a soft bonk and a silly squeak. At Christmas, a puff and a jingly ting. */
+export function yarnKnock(snowy: boolean) {
+  if (!ready()) return;
+  const t = ctx!.currentTime, up = Math.random() * 300;
+  tone(210, t, 0.1, 0.2, "sine", 90);
+  if (snowy) { hiss(t, 0.14, 0.12, "highpass", 2600); bell(2300 + up, t + 0.02, 0.3, 0.07); }
+  else tone(1100 + up, t + 0.03, 0.16, 0.08, "triangle", 1900 + up);
+}
+
+/** Six down in one roll! A quick run of bells going up. */
+export function yarnStrike() {
+  if (!ready()) return;
+  const t = ctx!.currentTime;
+  [72, 76, 79, 84, 88, 91].forEach((n, i) => bell(midi(n), t + i * 0.06, 0.55, 0.13));
+}
+
+/** Goal reached: a run up, sleigh bells if it's that time of year, then the fanfare. */
+export function yarnWin() {
+  if (!ready()) return;
+  const t = ctx!.currentTime;
+  [72, 76, 79, 84].forEach((n, i) => bell(midi(n), t + i * 0.08, 0.5, 0.14));
+  if (jolly) jingle(0.8);
+  setTimeout(fanfare, 350);
+}
+
 // ---------- home and shop ------------------------------------------------------
 
 /** Lapping water: a tiny wet plip. */
@@ -358,7 +466,7 @@ export function nope() {
 
 // ---------- ambience: a bed of sound per place ------------------------------
 
-export type Place = "map" | "forest" | "mountain" | "lab" | "home";
+export type Place = "map" | "forest" | "mountain" | "lab" | "home" | "arena";
 let pendingAmbience: Place | null = null;
 let stopAmbience: (() => void) | null = null;
 
@@ -415,7 +523,8 @@ export function ambience(place: Place) {
     tone(370, s, 0.35, 0.08, "sine", 340, "amb");
     tone(370, s + 0.5, 0.55, 0.08, "sine", 330, "amb");
   };
-  if (spooky && place !== "lab" && place !== "home") events.push([9, owl]); // Halloween: owls everywhere outside
+  if (spooky && place !== "lab" && place !== "home" && place !== "arena") events.push([9, owl]); // Halloween: owls everywhere outside
+  if (jolly && place !== "lab" && place !== "home" && place !== "arena") events.push([14, () => jingle(0.5, "amb")]); // Christmas: a sleigh goes by
   if (place === "map") {
     loopNoise("lowpass", 500, 0.05, 0.08);
     events.push([3, bird]);
@@ -437,6 +546,11 @@ export function ambience(place: Place) {
   } else if (place === "home") {
     // Cozy: birds outside the window, a clock ticking.
     events.push([5, bird], [1, () => tone(2400, ctx!.currentTime, 0.03, 0.025, "square", undefined, "amb")]);
+  } else if (place === "arena") {
+    // Calm indoor glow: a soft hum and now and then a far-off music-box blip.
+    hum(82, 0.02); hum(165, 0.008);
+    loopNoise("lowpass", 350, 0.02, 0.1);
+    events.push([4, () => bell(midi(84 + [0, 4, 7][Math.floor(Math.random() * 3)]!), ctx!.currentTime, 0.9, 0.025, "amb")]);
   } else {
     hum(110, 0.018); hum(220, 0.008); // fridge-ish lab hum
     events.push(
@@ -471,6 +585,15 @@ const MELODY: (number | null)[] = [
 ];
 const BASS = [48, 45, 41, 43];
 const EIGHTH = 0.34;
+// Jingle Bells (James Pierpont, 1857; public domain). Each row is four bars of eighths.
+const _ = null;
+const JINGLE: (number | null)[] = [
+  76, _, 76, _, 76, _, _, _,   76, _, 76, _, 76, _, _, _,   76, _, 79, _, 72, _, _, 74,   76, _, _, _, _, _, _, _,
+  77, _, 77, _, 77, _, _, 77,  77, _, 76, _, 76, _, 76, 76, 76, _, 74, _, 74, _, 76, _,   74, _, _, _, 79, _, _, _,
+  76, _, 76, _, 76, _, _, _,   76, _, 76, _, 76, _, _, _,   76, _, 79, _, 72, _, _, 74,   76, _, _, _, _, _, _, _,
+  77, _, 77, _, 77, _, _, 77,  77, _, 76, _, 76, _, 76, 76, 79, _, 79, _, 77, _, 74, _,   72, _, _, _, _, _, _, _,
+];
+const JINGLE_BASS = [48, 48, 48, 48, 41, 48, 50, 43, 48, 48, 48, 48, 41, 48, 43, 48];
 
 function startMusic() {
   let step = 0, at = ctx!.currentTime + 0.5;
@@ -479,12 +602,17 @@ function startMusic() {
     // A backgrounded tab throttles timers; skip ahead rather than burst-play missed notes.
     if (at < ctx!.currentTime) at = ctx!.currentTime + 0.05;
     while (at < ctx!.currentTime + 0.6) {
-      const n = MELODY[step % MELODY.length];
+      const melody = jolly ? JINGLE : MELODY, bass = jolly ? JINGLE_BASS : BASS;
+      const n = melody[step % melody.length];
       const tune = spooky ? toMinor : (x: number) => x;
       if (n != null) bell(midi(tune(n)), at, 0.9, 0.16, "music");
-      if (step % 8 === 0) bell(midi(tune(BASS[(step / 8) % 4]!)), at, 2.4, 0.18, "music");
-      if (step % 8 === 4) bell(midi(tune(BASS[Math.floor(step / 8) % 4]! + 7)), at, 1.2, 0.08, "music");
-      at += spooky ? EIGHTH * 1.15 : EIGHTH;
+      if (step % 8 === 0) bell(midi(tune(bass[(step / 8) % bass.length]!)), at, 2.4, 0.18, "music");
+      if (step % 8 === 4) bell(midi(tune(bass[Math.floor(step / 8) % bass.length]! + 7)), at, 1.2, 0.08, "music");
+      if (jolly && step % 2 === 0) { // sleigh bells on every beat
+        hiss(at, 0.06, step % 4 === 0 ? 0.16 : 0.09, "bandpass", 7500, 4, undefined, "music");
+        tone(5200, at, 0.05, 0.025, "sine", undefined, "music");
+      }
+      at += spooky ? EIGHTH * 1.15 : jolly ? EIGHTH * 0.68 : EIGHTH;
       step++;
     }
   }, 150);

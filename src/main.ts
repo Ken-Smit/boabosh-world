@@ -12,11 +12,22 @@ import { makeCat, dress, type Cat } from "./cat.ts";
 import { buildWorld, HOME_SIGN } from "./world.ts";
 import { buildArea, type AreaScene } from "./areas.ts";
 import { buildGarden, ticTacToe, rockPaperScissors, kittenChess, type Result, type Mode } from "./games.ts";
+import { buildArena, type LaserTag } from "./lasertagScene.ts";
+import { fishCatch } from "./fishcatchGame.ts";
+import { LEVELS, LEVEL_ORDER, CHEER, outcome, type Level, type Round } from "./lasertag.ts";
+import { buildLane, type YarnRoll } from "./yarnrollScene.ts";
+import { CONFIG as YARN, YARN_CHEER, yarnOutcome, type YarnRound } from "./yarnroll.ts";
 import { startFeeding, type Activity } from "./feed.ts";
 import { startPlay, startMove, startNap, startScoop } from "./play.ts";
 import * as sfx from "./sound.ts";
 import * as hw from "./halloween.ts";
+import * as xmas from "./christmas.ts";
+import { seasonOf } from "./season.ts";
 import { AREA_INFO, generate, type Question } from "./quiz.ts";
+
+// This time of year's theme, if any. A date has one season, so only one ever runs.
+const season = seasonOf();
+const theme = season === "christmas" ? xmas : season === "halloween" ? hw : null;
 
 // ---------- scene ----------------------------------------------------------
 const canvas = document.getElementById("scene") as HTMLCanvasElement;
@@ -107,7 +118,7 @@ scene.add(signHit);
 }
 
 toonify(scene); // map built: convert anything made with raw Lambert materials
-hw.dress(scene, "map", { home: HOME, pads: [...Object.values(SPOTS), GARDEN] });
+theme?.dress(scene, "map", { home: HOME, pads: [...Object.values(SPOTS), GARDEN] });
 
 // Every view is framed for a wide screen. On narrow or tall screens (phones and
 // tablets held upright) widen the lens a little, then pull the camera back so
@@ -128,8 +139,8 @@ const resize = () => {
   camera.updateProjectionMatrix();
 };
 /** Camera at the view's spot, pulled back along its line of sight on narrow screens. */
-function placeCamera(v: { camPos: THREE.Vector3; camLook: THREE.Vector3 }, drift = new THREE.Vector3()) {
-  camera.position.copy(v.camPos).sub(v.camLook).multiplyScalar(pullBack).add(v.camLook).add(drift);
+function placeCamera(v: { camPos: THREE.Vector3; camLook: THREE.Vector3; closeUp?: number }, drift = new THREE.Vector3()) {
+  camera.position.copy(v.camPos).sub(v.camLook).multiplyScalar(1 + (pullBack - 1) * (v.closeUp ?? 1)).add(v.camLook).add(drift);
   camera.lookAt(v.camLook);
 }
 addEventListener("resize", resize);
@@ -154,7 +165,7 @@ let pendingGarden = false; // walking to the Game Garden pad
 let pendingAction: (() => void) | null = null; // at home: walk somewhere, then do this
 
 // ---------- views: the map, or inside one area ----------------------------
-type View = Pick<AreaScene, "scene" | "camPos" | "camLook" | "update">;
+type View = Pick<AreaScene, "scene" | "camPos" | "camLook" | "update"> & { closeUp?: number }; // closeUp: share of the narrow-screen pull-back to use
 const mapView: View = { scene, camPos: camera.position.clone(), camLook: new THREE.Vector3(0, 0, -0.5), update: updateWorld };
 const areaViews = new Map<Area, AreaScene>(); // built on first visit, then reused
 // The top bar is 1–2 rows depending on the screen; panels sit just below it.
@@ -194,7 +205,7 @@ function enterArea(area: Area) {
   fadeThen(() => {
     sfx.ambience(area);
     let v = areaViews.get(area);
-    if (!v) { v = buildArea(area); areaViews.set(area, v); hw.dress(v.scene, area); }
+    if (!v) { v = buildArea(area); areaViews.set(area, v); theme?.dress(v.scene, area); }
     here = area;
     show(v);
     cat.group.position.copy(v.entry);
@@ -266,7 +277,7 @@ const ptr = new THREE.Vector2();
 
 canvas.addEventListener("pointerdown", (e) => {
   sfx.unlock();
-  if (fading) return;
+  if (fading || view === arenaView || view === yarnView) return; // these have their own controls
   ptr.set((e.clientX / innerWidth) * 2 - 1, -(e.clientY / innerHeight) * 2 + 1);
   ray.setFromCamera(ptr, camera);
 
@@ -277,9 +288,9 @@ canvas.addEventListener("pointerdown", (e) => {
     return;
   }
 
-  // Halloween: tap a ghost, pumpkin or cauldron for a friendly "Boo!".
-  const spooky = hw.hit(ray, view.scene);
-  if (spooky) { hw.boo(spooky, clock.getElapsedTime()); return; }
+  // Seasonal: tap a ghost or pumpkin for a "Boo!", a snowman or present for a "Ho ho ho!".
+  const surprise = theme?.hit(ray, view.scene);
+  if (surprise) { theme!.boo(surprise, clock.getElapsedTime()); return; }
 
   // At home: tap another cat to switch to caring for it.
   if (homeView && view === homeView) {
@@ -466,16 +477,18 @@ const empty = (text: string, goShop?: Category) => {
 const closePanels = () => { for (const id of ["shop", "wardrobe", "decorate", "arcade", "game"]) $(id).hidden = true; };
 
 // ---------- shop ---------------------------------------------------------------
-type ShopTab = Category | "halloween";
+type ShopTab = Category | "halloween" | "christmas";
 let shopTab: ShopTab = "food";
+const seasonTab = () => (theme?.isOn() ? season : null);
 function openShop(tab: ShopTab = shopTab) {
-  if (tab === "halloween" && !hw.isOn()) tab = "food";
+  if ((tab === "halloween" || tab === "christmas") && tab !== seasonTab()) tab = "food";
   shopTab = tab;
   $("shop-coins").textContent = String(state.coins);
   const list: { key: ShopTab; label: string }[] = SHOP_TABS.map((t) => ({ key: t.cat, label: t.label }));
-  if (hw.isOn()) list.unshift({ key: "halloween", label: "🎃 Halloween" });
+  const st = seasonTab();
+  if (st) list.unshift({ key: st, label: st === "christmas" ? "🎄 Christmas" : "🎃 Halloween" });
   tabs($("shop-tabs"), list, tab, (k) => openShop(k));
-  const items = CATALOG.filter((i) => (tab === "halloween" ? i.season === "halloween" : i.cat === tab) && (i.price > 0 || tab === "food"));
+  const items = CATALOG.filter((i) => (tab === st ? i.season === st : i.cat === tab) && (i.price > 0 || tab === "food"));
   $("shop-items").replaceChildren(...items.map((it) => {
     const have = it.cat !== "food" && owns(state, it.id);
     const status = have ? "Owned ✓" : `🪙 ${it.price}${it.amount ? ` · +${it.amount} 🐟` : ""}`;
@@ -505,7 +518,7 @@ function shopBuy(it: ShopItem) {
   else if (home || it.cat === "decor") { state = furnish(state, it.id); persist(); msg.textContent = `🏠 The ${it.label} is in the home now!`; }
   openShop(shopTab);
 }
-$("shop-btn").onclick = () => { closePanels(); $("shop-msg").textContent = ""; openShop(hw.isOn() && shopTab === "food" ? "halloween" : shopTab); };
+$("shop-btn").onclick = () => { closePanels(); $("shop-msg").textContent = ""; openShop((shopTab === "food" && seasonTab()) || shopTab); };
 $("shop-close").onclick = () => { $("shop").hidden = true; };
 
 // ---------- dress up: pick a cat, then clothes ------------------------------------
@@ -566,6 +579,17 @@ function openDecorate(tab: DecoTab = decoTab) {
 }
 $("decorate-close").onclick = () => { $("decorate").hidden = true; };
 
+const JOLLY_GAMES: Record<Game, { label: string; icon: string }> = {
+  rps: { label: "Mitten Rock-Paper-Scissors", icon: "🧤" },
+  ttt: { label: "Santa Tic-Tac-Toe", icon: "🎅" },
+  chess: { label: "Christmas Kitten Chess", icon: "🎄" },
+  lasertag: { label: "Snowy Laser Tag", icon: "❄️" },
+  fish: { label: "Stocking Catch", icon: "🧦" },
+  yarn: { label: "Snowball Roll", icon: "⛄" },
+};
+const isJolly = () => document.body.classList.contains("christmas");
+const gameName = (g: Game) => (isJolly() ? JOLLY_GAMES[g] : GAMES[g]);
+
 // ---------- Game Garden ----------------------------------------------------------------
 let gardenView: AreaScene | null = null;
 let currentGame: Game | null = null;
@@ -575,7 +599,7 @@ function enterGarden() {
   closePanels();
   sfx.swish();
   fadeThen(() => {
-    if (!gardenView) { gardenView = buildGarden(); hw.dress(gardenView.scene, "garden"); }
+    if (!gardenView) { gardenView = buildGarden(); theme?.dress(gardenView.scene, "garden"); }
     sfx.ambience("map");
     here = null;
     show(gardenView);
@@ -607,7 +631,7 @@ function openArcade() {
   $("arcade-games").replaceChildren(...(Object.keys(GAMES) as Game[]).map((g) => {
     const info = GAMES[g], ok = canPlay(state, g);
     const status = ok.ok ? `Play · 🪙 ${info.price}` : ok.why === "brain" ? `🔒 🪙 ${info.price} · needs 🧠` : `🔒 needs 🪙 ${ok.need} more`;
-    const c = card({ icon: info.icon, label: info.label }, status, ok.ok ? [] : ["poor"], () => chooseMode(g));
+    const c = card(gameName(g), status, ok.ok ? [] : ["poor"], () => chooseMode(g));
     const trophies = document.createElement("span");
     trophies.className = "trophies";
     trophies.textContent = state.trophies[g] ? `🏆 × ${state.trophies[g]}` : "";
@@ -620,10 +644,20 @@ function openArcade() {
 /** Who to play: Boabosh (the active cat) or a friend on this device. */
 function chooseMode(g: Game) {
   const ok = canPlay(state, g);
-  if (!ok.ok) { playGame(g, "cat"); return; } // shows why it's locked
+  if (!ok.ok || g === "fish") { playGame(g, "cat"); return; } // locked shows why; one-player games go straight in
+  if (g === "yarn") { startYarn(); return; } // one player, one gentle level
+  if (g === "lasertag") {
+    openArcade();
+    $("arcade-msg").textContent = `${gameName(g).icon} You're on the Blue team! Tag more ${isJolly() ? "Red" : "Pink"} cats than tag you. Pick a level:`;
+    $("arcade-games").replaceChildren(
+      ...LEVEL_ORDER.map((l) => card({ icon: LEVELS[l].icon, label: LEVELS[l].label }, LEVELS[l].blurb, [], () => startArena(l))),
+      card({ icon: "↩️", label: "Pick another game" }, "", [], openArcade),
+    );
+    return;
+  }
   const foe = activeCat(state).name;
   openArcade(); // refresh coins + brain meter, then swap the cards for the choice
-  $("arcade-msg").textContent = `${GAMES[g].icon} ${GAMES[g].label} — who's playing?`;
+  $("arcade-msg").textContent = `${gameName(g).icon} ${gameName(g).label} — who's playing?`;
   $("arcade-games").replaceChildren(
     card({ icon: "🐱", label: `Play against ${foe}` }, "1 player", [], () => playGame(g, "cat")),
     card({ icon: "👫", label: "Play a friend" }, "2 players, one device", [], () => playGame(g, "duo")),
@@ -632,7 +666,8 @@ function chooseMode(g: Game) {
   $("arcade").hidden = false;
 }
 
-function playGame(g: Game, mode: Mode) {
+/** Coins and brain meter: pays for the game, or says why it's locked. */
+function payForGame(g: Game) {
   const ok = canPlay(state, g);
   const msg = $("arcade-msg");
   if (!ok.ok) {
@@ -640,16 +675,21 @@ function playGame(g: Game, mode: Mode) {
     msg.textContent = ok.why === "brain"
       ? `First, answer ${ok.need} more question${ok.need === 1 ? "" : "s"} right in the Forest, Mountain or Lab! 📚`
       : `You need ${ok.need} more coins — every right answer gives 10! 🪙`;
-    return;
+    return false;
   }
   msg.textContent = "";
   state = startGame(state, g);
   persist();
   sfx.coin();
+  return true;
+}
+
+function playGame(g: Game, mode: Mode) {
+  if (!payForGame(g)) return;
   currentGame = g;
   $("arcade").hidden = true;
   const foe = activeCat(state).name;
-  $("game-title").textContent = `${GAMES[g].icon} ${GAMES[g].label} · ${mode === "duo" ? "👫 2 players" : `🐱 vs ${foe}`}`;
+  $("game-title").textContent = `${gameName(g).icon} ${gameName(g).label}${g === "fish" ? "" : ` · ${mode === "duo" ? "👫 2 players" : `🐱 vs ${foe}`}`}`;
   $("game-back").textContent = "Back to games";
   const hooks = {
     status: (t: string) => { $("game-status").textContent = t; },
@@ -658,12 +698,22 @@ function playGame(g: Game, mode: Mode) {
     foe,
   };
   const board = $("game-board");
-  (g === "chess" ? kittenChess : g === "ttt" ? ticTacToe : rockPaperScissors)(board, hooks);
+  (g === "fish" ? fishCatch : g === "chess" ? kittenChess : g === "ttt" ? ticTacToe : rockPaperScissors)(board, hooks);
   $("game").hidden = false;
 }
 
 function gameOver(r: Result) {
   const foe = activeCat(state).name;
+  if (currentGame === "fish") { // one player: nobody to beat, and the round runs on after the goal
+    if (r === "win") {
+      state = winGame(state, "fish");
+      persist();
+      setTimeout(sfx.fanfare, 200);
+      hint.textContent = `🏆 You caught enough! ${foe} says: "Good catch!"`;
+    } else hint.textContent = "Nice catching! Learn a bit more, then come catch again 💪";
+    react("cheer", true);
+    return;
+  }
   if (r === "win" && currentGame) {
     // You beat Boabosh: a trophy, and Boabosh cheers for you like a good sport.
     state = winGame(state, currentGame);
@@ -691,9 +741,77 @@ $("game-back").onclick = () => { $("game").hidden = true; currentGame = null; op
 $("arcade-learn").onclick = () => leaveGarden("📚 Pick a learning place: Reading Forest, Math Mountain or Science Lab!");
 $("arcade-leave").onclick = () => leaveGarden();
 
+// ---------- Laser Tag (a Game Garden game, played in its neon room) ---------------------
+let arenaView: LaserTag | null = null;
+
+function startArena(l: Level) {
+  if (!payForGame("lasertag")) return;
+  $("arcade").hidden = true;
+  sfx.swish();
+  fadeThen(() => {
+    // ponytail: rebuilt if the 🎄 button changed the look; the old scene stays in memory until reload, and toggling is rare.
+    if (arenaView?.jolly !== isJolly()) arenaView = buildArena();
+    sfx.ambience("arena");
+    document.body.classList.add("lasertag");
+    show(arenaView!);
+    arenaView!.begin(cat, l, arenaOver);
+  });
+}
+
+function backToGarden(msg = "") {
+  target = cat.group.position.clone(); // no walking during the fade
+  sfx.swish();
+  fadeThen(() => {
+    sfx.ambience("map");
+    document.body.classList.remove("lasertag", "yarnroll");
+    show(gardenView!);
+    cat.group.position.copy(gardenView!.stand);
+    target = gardenView!.stand.clone();
+    openArcade();
+    $("arcade-msg").textContent = msg;
+  });
+}
+
+function arenaOver(g: Round) {
+  const o = outcome(g);
+  if (o === "win") { state = winGame(state, "lasertag"); persist(); sfx.tagWin(); }
+  else if (o === "tie") sfx.chime();
+  else sfx.tagLose();
+  react(o === "win" ? "victory" : "cheer", true);
+  backToGarden(`🔵 ${g.blue}  ${isJolly() ? "🔴" : "🩷"} ${g.pink}. ${CHEER[o]}`);
+}
+
+$("lt-back").onclick = () => { arenaView?.stop(); backToGarden(); };
+
+// ---------- Yarn Roll (a Game Garden game, played on its own little lane) ----------------
+let yarnView: YarnRoll | null = null;
+
+function startYarn() {
+  if (!payForGame("yarn")) return;
+  $("arcade").hidden = true;
+  sfx.swish();
+  fadeThen(() => {
+    if (yarnView?.jolly !== isJolly()) yarnView = buildLane(); // rebuilt if the 🎄 button changed the look
+    sfx.ambience("map");
+    document.body.classList.add("yarnroll");
+    show(yarnView!);
+    yarnView!.begin(cat, yarnOver, () => react("cheer", true));
+  });
+}
+
+function yarnOver(g: YarnRound) {
+  const o = yarnOutcome(g.total);
+  if (o === "win") { state = winGame(state, "yarn"); persist(); sfx.yarnWin(); }
+  else sfx.tagLose();
+  react(o === "win" ? "victory" : "cheer", true);
+  backToGarden(`${isJolly() ? "⛄" : "🐭"} ${g.total} knocked down, goal ${YARN.goal}. ${YARN_CHEER[o]}`);
+}
+
+$("yr-back").onclick = () => { yarnView?.stop(); backToGarden(); };
+
 // ---------- home and care -------------------------------------------------------------
 let homeView: HomeScene | null = null;
-const getHome = () => { if (!homeView) { homeView = buildHome(); hw.dress(homeView.scene, "home"); } return homeView; };
+const getHome = () => { if (!homeView) { homeView = buildHome(); theme?.dress(homeView.scene, "home"); } return homeView; };
 
 function enterHome() {
   if (!$("quiz").hidden) { $("quiz").hidden = true; currentQ = null; }
@@ -1007,13 +1125,21 @@ const toggles = () => {
   $("mus").setAttribute("aria-pressed", String(sfx.musicOn()));
   $("mus").setAttribute("aria-label", sfx.musicOn() ? "Music on" : "Music off");
 };
-// 🎃 Halloween theme toggle (on by itself in October).
+// Seasonal theme toggle: 🎄 at Christmas, 🎃 in October, hidden the rest of the year.
 const hwButton = () => {
-  $("hw-btn").setAttribute("aria-pressed", String(hw.isOn()));
-  $("hw-btn").setAttribute("aria-label", hw.isOn() ? "Halloween decorations on" : "Halloween decorations off");
+  const name = season === "christmas" ? "Christmas" : "Halloween";
+  $("hw-btn").textContent = season === "christmas" ? "🎄" : "🎃";
+  $("hw-btn").title = `${name} decorations`;
+  $("hw-btn").setAttribute("aria-pressed", String(!!theme?.isOn()));
+  $("hw-btn").setAttribute("aria-label", `${name} decorations ${theme?.isOn() ? "on" : "off"}`);
 };
-$("hw-btn").onclick = () => { hw.setOn(!hw.isOn()); hwButton(); if (hw.isOn()) sfx.boo(); };
-hw.setOn(hw.isOn()); // apply body class + music for the starting state
+$("hw-btn").hidden = !theme;
+$("hw-btn").onclick = () => {
+  theme!.setOn(!theme!.isOn());
+  hwButton();
+  if (theme!.isOn()) (season === "christmas" ? sfx.hoHoHo : sfx.boo)();
+};
+theme?.apply(); // apply body class + music for the starting state
 hwButton();
 $("snd").onclick = () => { sfx.unlock(); sfx.setSound(!sfx.soundOn()); toggles(); };
 $("mus").onclick = () => { sfx.unlock(); sfx.setMusic(!sfx.musicOn()); toggles(); };
@@ -1040,7 +1166,7 @@ renderer.setAnimationLoop(() => {
   gems.forEach((g, i) => { g.position.y = 1.8 + Math.sin(t * 2 + i) * 0.18; g.rotation.y = t * 0.8; });
 
   view.update(t);
-  hw.update(view.scene, t);
+  theme?.update(view.scene, t);
   // Gentle camera drift inside areas so the place feels alive.
   if (view !== mapView) {
     placeCamera(view, new THREE.Vector3(Math.sin(t * 0.15) * 0.6, Math.sin(t * 0.21) * 0.2, 0));
@@ -1050,7 +1176,10 @@ renderer.setAnimationLoop(() => {
   // a pad fades into that area; in an area, arriving opens the quiz.
   const to = target.clone().sub(cat.group.position);
   const dist = to.length();
-  if (dist > 0.08 && !activity) {
+  const tagging = (view === arenaView && arenaView.playing()) || (view === yarnView && yarnView.playing()); // these games move the cat themselves
+  if (tagging) {
+    // nothing to walk to
+  } else if (dist > 0.08 && !activity) {
     cat.group.position.addScaledVector(to.normalize(), Math.min(0.07, dist));
     cat.group.rotation.y = Math.atan2(to.x, to.z);
     cat.group.position.y = Math.abs(Math.sin(t * 9)) * 0.08; // bouncy trot

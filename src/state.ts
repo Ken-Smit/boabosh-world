@@ -50,11 +50,14 @@ export type State = {
 // Balance: a game costs coins (earned by answering) AND needs a few fresh right
 // answers since the last game, so banking coins can't skip the learning. Wins
 // give trophies, never coins, so games can't be farmed to pay for more games.
-export type Game = "rps" | "ttt" | "chess";
+export type Game = "rps" | "ttt" | "chess" | "lasertag" | "fish" | "yarn";
 export const GAMES: Record<Game, { label: string; price: number; icon: string }> = {
   rps: { label: "Paw Rock-Paper-Scissors", price: 10, icon: "🐾" },
   ttt: { label: "Kitten Tic-Tac-Toe", price: 20, icon: "⭕" },
   chess: { label: "Kitten Chess", price: 40, icon: "♟️" },
+  lasertag: { label: "Laser Tag", price: 20, icon: "⚡" },
+  yarn: { label: "Yarn Roll", price: 20, icon: "🧶" },
+  fish: { label: "Fish Catch", price: 10, icon: "🐟" },
 };
 export const BRAIN_PER_GAME = 3;
 
@@ -107,7 +110,7 @@ export const newState = (now = Date.now()): State => ({
   grade: { forest: 2, mountain: 2, lab: 2 },
   seen: { forest: [], mountain: [], lab: [] },
   sinceGame: 0,
-  trophies: { rps: 0, ttt: 0, chess: 0 },
+  trophies: { rps: 0, ttt: 0, chess: 0, lasertag: 0, fish: 0, yarn: 0 },
   updatedAt: now,
 });
 

@@ -1,4 +1,4 @@
-// Halloween theme: on automatically in October (and on Nov 1), with a toggle.
+// Halloween theme: on automatically in October only, with a toggle.
 // `dress(scene, place)` adds a hidden group of pumpkins, ghosts, bats and webs
 // to a scene and remembers its colours; `setOn` shows/hides every group and
 // swaps the sky and light to a purple-orange sunset and back.
@@ -10,14 +10,15 @@ import * as THREE from "three";
 import { mat, at, shadows } from "./world.ts";
 import { floater } from "./feed.ts";
 import * as sfx from "./sound.ts";
+import { offMark, seasonOf, themeOn } from "./season.ts";
 
 export type Place = "map" | "forest" | "mountain" | "lab" | "home" | "garden";
 
 // ---------- on / off --------------------------------------------------------------
 const KEY = "catworld:halloween";
-export const isSeason = (d = new Date()) => d.getMonth() === 9 || (d.getMonth() === 10 && d.getDate() === 1);
+export const isSeason = (d = new Date()) => seasonOf(d) === "halloween";
 let on = (() => {
-  try { const v = localStorage.getItem(KEY); if (v) return v === "on"; } catch { /* private mode */ }
+  try { return themeOn("halloween", localStorage.getItem(KEY)); } catch { /* private mode */ }
   return isSeason();
 })();
 export const isOn = () => on;
@@ -294,6 +295,7 @@ type Pop = { s: THREE.Sprite; born: number };
 
 /** Add the Halloween group to a scene (hidden unless the theme is on). Call once per scene. */
 export function dress(scene: THREE.Scene, place: Place, spots?: MapSpots) {
+  if (!isSeason()) return; // nothing to build the rest of the year
   const L = layout(place, spots);
   const group = new THREE.Group();
   group.name = "halloween";
@@ -359,12 +361,17 @@ export function dress(scene: THREE.Scene, place: Place, spots?: MapSpots) {
   d.setColors(on);
 }
 
+/** Show the current state everywhere, without saving anything. */
+export function apply() {
+  for (const d of dressed) { d.group.visible = on; d.setColors(on); }
+  sfx.setSpooky(on);
+  document.body.classList.toggle("halloween", on);
+}
+
 export function setOn(v: boolean) {
   on = v;
-  try { localStorage.setItem(KEY, v ? "on" : "off"); } catch { /* ignore */ }
-  for (const d of dressed) { d.group.visible = v; d.setColors(v); }
-  sfx.setSpooky(v);
-  document.body.classList.toggle("halloween", v);
+  try { localStorage.setItem(KEY, v ? "on" : offMark()); } catch { /* ignore */ }
+  apply();
 }
 
 export function update(scene: THREE.Scene, t: number) {

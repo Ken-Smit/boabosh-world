@@ -11,6 +11,9 @@ import * as chess from "./chess.ts";
 import { winner, coachMove, judge, HANDS, type Mark, type Hand } from "./minigames.ts";
 import * as sfx from "./sound.ts";
 
+// ponytail: read when drawn; the 3D kittens only pick it up on the next page load.
+const jolly = () => document.body.classList.contains("christmas");
+
 // ============================================================================
 // The scene
 // ============================================================================
@@ -50,7 +53,7 @@ export function buildGarden(): AreaScene {
       g.add(tile);
     }
     g.add(at(new THREE.Mesh(new THREE.BoxGeometry(5.1, 0.05, 5.1), mat(0x5a3a22)), 0, 0.01, 0));
-    for (const [coat, hat, x, z, ry] of [["ginger", "crown", -0.3, 1.5, 0.2], ["pepper", "crown", 0.9, -1.5, Math.PI - 0.3], ["ginger", "top-hat", -1.5, 1.5, 0.3], ["pepper", "witch-hat", 2.1, -2.1, Math.PI]] as const) {
+    for (const [coat, hat, x, z, ry] of [["ginger", "crown", -0.3, 1.5, 0.2], ["pepper", "crown", 0.9, -1.5, Math.PI - 0.3], ["ginger", "top-hat", -1.5, 1.5, 0.3], ["pepper", jolly() ? "santa-hat" : "witch-hat", 2.1, -2.1, Math.PI]] as const) {
       const k = makeCat(COATS[coat]);
       dress(k, { hat, collar: null, glasses: null, back: null });
       k.group.scale.setScalar(0.75);
@@ -218,7 +221,7 @@ export function buildGarden(): AreaScene {
   // Coach Whiskers, who runs the games: a grey tabby in a propeller cap.
   {
     const coach = makeCat(COATS.smokey);
-    dress(coach, { hat: "propeller", collar: "bowtie", glasses: null, back: null });
+    dress(coach, { hat: jolly() ? "elf-hat" : "propeller", collar: "bowtie", glasses: null, back: null });
     coach.group.position.set(1.9, 0, -1.0);
     coach.group.rotation.y = -0.3;
     scene.add(coach.group);
@@ -265,6 +268,19 @@ function face(cx: number, cy: number, r: number, side: "w" | "b", ears = true) {
     <path d="M${P(0, 5)} q${-2 * k} ${2.5 * k} ${-4 * k} ${1 * k} M${P(0, 5)} q${2 * k} ${2.5 * k} ${4 * k} ${1 * k}" stroke="${s.line}" stroke-width="1.4" fill="none"/>
     <path d="M${P(-8, 4)} h${-9 * k} M${P(8, 4)} h${9 * k}" stroke="${side === "w" ? "#b8aa98" : "#fff"}" stroke-width="1"/>`;
 }
+
+// ---------- Christmas trimmings (shapes stay the same, so pieces still read) -------------
+/** A floppy hat with a white brim and pom-pom, brim centred on (x, y). */
+const santaHat = (x: number, y: number, w: number, color: string) => `
+  <path d="M${x - w * 0.45} ${y} Q${x - w * 0.2} ${y - w * 0.85} ${x + w * 0.3} ${y - w * 0.7} Q${x + w * 0.55} ${y - w * 0.55} ${x + w * 0.55} ${y - w * 0.2} Q${x + w * 0.35} ${y - w * 0.4} ${x + w * 0.45} ${y} Z" fill="${color}" stroke="#4a1a1a" stroke-width="2"/>
+  <rect x="${x - w / 2}" y="${y - w * 0.1}" width="${w}" height="${w * 0.2}" rx="${w * 0.1}" fill="#fff" stroke="#8fa3b5" stroke-width="1.5"/>
+  <circle cx="${x + w * 0.55}" cy="${y - w * 0.2}" r="${w * 0.11}" fill="#fff" stroke="#8fa3b5" stroke-width="1.5"/>`;
+const HOLLY = `<path d="M50 90 Q42 83 34 88 Q40 95 50 90 Q58 83 66 88 Q60 95 50 90 Z" fill="#2f8a4a" stroke="#14532d" stroke-width="1.5"/><circle cx="47" cy="90" r="3" fill="#d62839"/><circle cx="53" cy="90" r="3" fill="#d62839"/>`;
+const SNOWCAP = `<g fill="#fff" stroke="#8fa3b5" stroke-width="1.5"><ellipse cx="29.5" cy="22" rx="7" ry="3.5"/><ellipse cx="50" cy="22" rx="8" ry="3.5"/><ellipse cx="70.5" cy="22" rx="7" ry="3.5"/></g>`;
+const ANTLERS = `<path d="M60 17 L70 4 M65 11 L74 11 M46 14 L38 3 M42 9 L33 9" fill="none" stroke="#7a4a21" stroke-width="3" stroke-linecap="round"/><circle cx="26" cy="44" r="4" fill="#e5322d"/>`;
+const trimmings: Record<chess.Kind, string> = {
+  P: santaHat(50, 41, 30, "#d62839"), R: SNOWCAP + HOLLY, N: ANTLERS + HOLLY, B: HOLLY, Q: HOLLY, K: HOLLY,
+};
 
 /**
  * Chess pieces: the real chess shapes (so they read as King, Queen, Rook...)
@@ -318,11 +334,11 @@ export function pieceSVG(kind: chess.Kind, side: "w" | "b") {
         <path d="M50 1 v15 M43.5 7 h13" stroke="#ffd23f" stroke-width="3" stroke-linecap="round"/>`;
       break;
   }
-  return `<svg viewBox="0 0 100 100" aria-hidden="true">${base}${art}</svg>`;
+  return `<svg viewBox="0 0 100 100" aria-hidden="true">${base}${art}${jolly() ? trimmings[kind] : ""}</svg>`;
 }
 
 /** A kitten head for tic-tac-toe. */
-export const kittenSVG = (side: "w" | "b") => `<svg viewBox="0 0 100 100" aria-hidden="true">${face(50, 56, 34, side)}</svg>`;
+export const kittenSVG = (side: "w" | "b") => `<svg viewBox="0 0 100 100" aria-hidden="true">${face(50, 56, 34, side)}${jolly() ? santaHat(50, 30, 56, side === "w" ? "#d62839" : "#2f8a4a") : ""}</svg>`;
 
 /** Paw art for rock (curled), paper (spread wide) and scissors (two toes out). */
 export function pawSVG(hand: Hand) {
@@ -331,15 +347,18 @@ export function pawSVG(hand: Hand) {
     paper: [[22, 34, 10], [38, 18, 10], [58, 16, 10], [76, 30, 10], [86, 54, 9]],
     scissors: [[38, 14, 9], [64, 12, 9]],
   };
+  // At Christmas the paws wear red mittens with a white cuff.
+  const j = jolly(), fur = j ? "#d62839" : "#f6e2c8", line = j ? "#7a1420" : "#8a5a3a", pad = j ? "#ffffff" : "#ff9ab0";
   // Scissors: two long toes in a V, outlined so they read on a light card.
   const extra = hand === "scissors"
-    ? `<path d="M44 52 L38 16 M56 52 L64 14" stroke="#8a5a3a" stroke-width="20" stroke-linecap="round"/><path d="M44 52 L38 16 M56 52 L64 14" stroke="#f6e2c8" stroke-width="14" stroke-linecap="round"/>`
+    ? `<path d="M44 52 L38 16 M56 52 L64 14" stroke="${line}" stroke-width="20" stroke-linecap="round"/><path d="M44 52 L38 16 M56 52 L64 14" stroke="${fur}" stroke-width="14" stroke-linecap="round"/>`
     : "";
   return `<svg viewBox="0 0 100 100" aria-hidden="true">
     ${extra}
-    <ellipse cx="50" cy="64" rx="${hand === "rock" ? 26 : 30}" ry="${hand === "rock" ? 24 : 27}" fill="#f6e2c8" stroke="#8a5a3a" stroke-width="3"/>
-    <ellipse cx="50" cy="70" rx="15" ry="12" fill="#ff9ab0"/>
-    ${toes[hand].map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}" fill="#f6e2c8" stroke="#8a5a3a" stroke-width="2.5"/><circle cx="${x}" cy="${y + 1}" r="${r * 0.55}" fill="#ff9ab0"/>`).join("")}
+    <ellipse cx="50" cy="64" rx="${hand === "rock" ? 26 : 30}" ry="${hand === "rock" ? 24 : 27}" fill="${fur}" stroke="${line}" stroke-width="3"/>
+    <ellipse cx="50" cy="70" rx="15" ry="12" fill="${pad}"/>
+    ${toes[hand].map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}" fill="${fur}" stroke="${line}" stroke-width="2.5"/><circle cx="${x}" cy="${y + 1}" r="${r * 0.55}" fill="${pad}"/>`).join("")}
+    ${j ? `<rect x="28" y="84" width="44" height="13" rx="6" fill="#fff" stroke="#8fa3b5" stroke-width="2"/>` : ""}
   </svg>`;
 }
 
@@ -418,7 +437,8 @@ export function rockPaperScissors(box: HTMLElement, { status, done, mode, foe }:
   const handA = el("div", "rps-hand", pawSVG("rock")), handB = el("div", "rps-hand coach", pawSVG("rock"));
   shows.append(el("span", "rps-who", nameA), handA, el("span", "rps-vs", "vs"), handB, el("span", "rps-who", nameB));
   const pick = el("div", "rps-pick");
-  const label: Record<Hand, string> = { rock: "Rock", paper: "Paper", scissors: "Scissors" };
+  const j = jolly(), paw = j ? "mitten" : "paw";
+  const label: Record<Hand, string> = j ? { rock: "Snowball", paper: "Gift Wrap", scissors: "Scissors" } : { rock: "Rock", paper: "Paper", scissors: "Scissors" };
   for (const h of HANDS) {
     const btn = el("button", "rps-btn", `${pawSVG(h)}<span>${label[h]}</span>`);
     btn.onclick = () => choose(h);
@@ -428,8 +448,8 @@ export function rockPaperScissors(box: HTMLElement, { status, done, mode, foe }:
   box.replaceChildren(arena);
   const tally = () => { score.textContent = `${nameA} ${a} – ${b} ${nameB} · first to 2 wins`; };
   const ask = () => status(mode === "duo"
-    ? (first ? "🙈 Player 1, look away! Player 2, pick your paw." : "Player 1, pick your paw — Player 2, no peeking! 🙈")
-    : "Pick a paw! Rock beats Scissors, Scissors beats Paper, Paper beats Rock.");
+    ? (first ? `🙈 Player 1, look away! Player 2, pick your ${paw}.` : `Player 1, pick your ${paw} — Player 2, no peeking! 🙈`)
+    : `Pick a ${paw}! ${label.rock} beats ${label.scissors}, ${label.scissors} beats ${label.paper}, ${label.paper} beats ${label.rock}.`);
 
   const choose = (h: Hand) => {
     if (busy) return;
@@ -439,7 +459,7 @@ export function rockPaperScissors(box: HTMLElement, { status, done, mode, foe }:
     first = null;
     busy = true;
     [handA, handB].forEach((x) => { x.innerHTML = pawSVG("rock"); x.classList.add("shake"); });
-    ["Paw…", "paw…", "POUNCE!"].forEach((w, i) => setTimeout(() => { status(w); sfx.pop(); }, i * 380));
+    (j ? ["Ho…", "ho…", "HO!"] : ["Paw…", "paw…", "POUNCE!"]).forEach((w, i) => setTimeout(() => { status(w); sfx.pop(); }, i * 380));
     setTimeout(() => {
       [handA, handB].forEach((x) => x.classList.remove("shake"));
       handA.innerHTML = pawSVG(pa);

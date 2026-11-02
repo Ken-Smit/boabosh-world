@@ -395,6 +395,7 @@ function forest(): AreaScene {
   // Fireflies.
   {
     const ff = particles(80, 0xfff27a, 0.12, new THREE.Vector3(9, 3, 9), new THREE.Vector3(0, 0.3, 0));
+    ff.name = "summery"; // no fireflies in the snow
     scene.add(ff);
     const base = (ff.geometry.attributes.position!.array as Float32Array).slice();
     movers.push((t) => {

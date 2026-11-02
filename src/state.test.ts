@@ -213,12 +213,38 @@ test("winning gives a trophy, never coins", () => {
   assert.equal(s.coins, 50);
 });
 
+test("Fish Catch has the same gate, and a win is a trophy, never coins", () => {
+  const ready = { ...newState(0), coins: 100, sinceGame: BRAIN_PER_GAME };
+  assert.deepEqual(canPlay({ ...ready, sinceGame: 0 }, "fish"), { ok: false, why: "brain", need: BRAIN_PER_GAME });
+  assert.deepEqual(canPlay({ ...ready, coins: 0 }, "fish"), { ok: false, why: "coins", need: GAMES.fish.price });
+  const played = startGame(ready, "fish", 9);
+  assert.equal(played.coins, 90);
+  assert.equal(played.sinceGame, 0);
+  const won = winGame(played, "fish");
+  assert.equal(won.trophies.fish, 1);
+  assert.equal(won.coins, 90);
+});
+
+test("laser tag goes through the same gate as the Garden, and old trophies survive", () => {
+  const ready = run(BRAIN_PER_GAME).s;
+  assert.deepEqual(canPlay(run(BRAIN_PER_GAME - 1).s, "lasertag"), { ok: false, why: "brain", need: 1 });
+  assert.deepEqual(canPlay({ ...ready, coins: 0 }, "lasertag"), { ok: false, why: "coins", need: GAMES.lasertag.price });
+  const played = startGame(ready, "lasertag", 99);
+  assert.equal(played.coins, ready.coins - GAMES.lasertag.price);
+  assert.equal(played.sinceGame, 0);
+  const won = winGame(played, "lasertag");
+  assert.equal(won.trophies.lasertag, 1);
+  assert.equal(won.coins, played.coins);
+  const old = { ...newState(0), trophies: { rps: 2, ttt: 1, chess: 3 } }; // a save from before the arena
+  assert.deepEqual(migrate(old, 5)!.trophies, { rps: 2, ttt: 1, chess: 3, lasertag: 0, fish: 0, yarn: 0 });
+});
+
 test("older v2 saves gain the new fields and the free scratching post", () => {
   const { sinceGame: _a, trophies: _b, grade: _c, seen: _d, ...old } = newState(0);
   const legacy = { ...old, items: old.items.filter((i) => i !== "scratcher"), home: { ...old.home, decor: [] } };
   const s = migrate(legacy, 5)!;
   assert.equal(s.sinceGame, 0);
-  assert.deepEqual(s.trophies, { rps: 0, ttt: 0, chess: 0 });
+  assert.deepEqual(s.trophies, { rps: 0, ttt: 0, chess: 0, lasertag: 0, fish: 0, yarn: 0 });
   assert.deepEqual(s.grade, { forest: 2, mountain: 2, lab: 2 });
   assert.ok(s.items.includes("scratcher"));
   assert.deepEqual(s.home.decor, ["scratcher"]);

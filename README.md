@@ -27,16 +27,36 @@ litter, and decorate the room your way.
 
 ## Play
 
-The **Game Garden** has Kitten Chess, Kitten Tic-Tac-Toe and Paw Rock-Paper-Scissors.
-Play against Boabosh or a friend on the same device. Games cost coins **and** need a full
+The **Game Garden** has Kitten Chess, Kitten Tic-Tac-Toe, Paw Rock-Paper-Scissors, Laser Tag, Fish Catch and Yarn Roll.
+Play the board games against Boabosh or a friend on the same device. Games cost coins **and** need a full
 🧠 brain meter (3 right answers since the last game), so it's always learn a bit, play a bit.
 
 ![Kitten Chess](docs/screenshots/chess.jpg)
 
+**Fish Catch** is a 40-second, one-player round: slide a finger or mouse, or use the arrow
+keys, to catch falling fish and golden fish, and dodge the silly old boots. Score 18 for a trophy.
+
+**Yarn Roll** is cat bowling: pull back on the yarn ball, aim and let go to knock down six
+toy mice, with bumpers so no roll is wasted. Knock down 11 in 5 rolls for a 🏆, while your
+cat cheers from beside the lane. Drag with a finger or mouse, or use the arrow keys and Space.
+
+**Laser Tag** puts your cat on the Blue team against the Pink team in a neon room, in
+😺 Easy, 😼 Medium or 😾 Hard. Friendly toy beams, generous aim help, and tagged cats just
+go "Meow!", get dizzy and pop back up. Nobody is ever out; whoever tagged more wins a 🏆.
+Play with the arrow keys and Space, or the on-screen stick and TAG button.
+
 ## Seasonal
 
-In October the world turns into a friendly Halloween sunset, with pumpkins, giggling
-ghosts and bats. The 🎃 button turns it off.
+From November 1 through January 6 the world is a snowy Christmas, with decorated trees,
+candy canes, jolly snowmen and presents to tap, and Jingle Bells on the music box. The 🎄
+button turns it off. In October it's a friendly Halloween sunset instead, with pumpkins,
+giggling ghosts and bats, and a 🎃 button.
+
+At Christmas the Game Garden joins in: reindeer knights and Santa-hat pawns on a green and
+snowy chess board, Santa-hat kittens in tic-tac-toe, Snowball, Gift Wrap and Scissors with
+mittens, a snowy Laser Tag against the Santa-hatted Red team, Stocking Catch, where a red stocking
+catches treats and gold stars under string lights and dodges silly lumps of coal, and Snowball Roll,
+which bowls a snowball at snowmen and presents between candy-cane bumpers.
 
 ![Halloween](docs/screenshots/halloween.jpg)
 

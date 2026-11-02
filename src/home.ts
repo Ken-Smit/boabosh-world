@@ -11,6 +11,7 @@ import { activeCat, needs, type State } from "./state.ts";
 import { toonify } from "./toon.ts";
 import { mat, at, shadows, leafMats, label } from "./world.ts";
 import { pumpkin, cauldron, batGarland } from "./halloween.ts";
+import { christmasTree, snowman, present, stockings, twinkle } from "./christmas.ts";
 
 export type HomeScene = AreaScene & {
   apply: (s: State, now?: number) => void;
@@ -331,6 +332,14 @@ const DECOR: Record<string, { at: [number, number, number]; ry?: number; build: 
     b.scale.setScalar(1 - f);
   }) },
   "bat-garland": { at: [5.95, 4.0, 0], ry: -Math.PI / 2, build: () => batGarland(5) },
+  "christmas-tree": { at: [-2.0, 0, 2.6], build: () => christmasTree(0.95), anim: (_, t) => twinkle(t) },
+  stockings: { at: [-2.4, 2.75, -4.42], build: () => stockings() },
+  "snowman-friend": { at: [4.2, 0, 3.4], ry: -0.3, build: () => snowman(0.8) },
+  "gift-pile": { at: [2.9, 0, 3.7], build: () => {
+    const g = new THREE.Group();
+    g.add(present(1, 0), at(present(0.8, 1), 0.55, 0, 0.1), at(present(0.7, 2), 0.2, 0, 0.5), at(present(0.55, 3), 0.05, 0.4, 0));
+    return g;
+  } },
   piano: { at: [-5.45, 0, -3.3], ry: Math.PI / 2, build: () => {
     const g = new THREE.Group();
     g.add(at(box(1.3, 0.75, 0.5, 0xd62828), 0, 0.55, 0));
